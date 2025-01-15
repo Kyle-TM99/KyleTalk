@@ -1,0 +1,166 @@
+/* 버튼 스타일 */
+.custom-button {
+    background-color: #ffffff;
+    color: #215EA3;
+    border: 2px solid #215EA3;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.custom-button:hover {
+    background-color: #215EA3;
+    color: #ffffff;
+    border-color: #ffffff;
+}
+
+.custom-button:checked {
+    background-color: #215EA3;
+    color: #ffffff;
+    border-color: #ffffff;
+}
+
+/* 나머지 버튼 스타일 */
+.custom-button2 {
+    background-color: #215EA3;
+    color: white;
+    border: 2px solid #215EA3;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.custom-button2:hover {
+    background-color: #ffffff;
+    color: #215EA3;
+    border-color: #215EA3;
+}
+
+
+.custom-button2 :checked {
+    background-color: #ffffff;
+    color: #215EA3;
+    border-color: #215EA3;
+}
+
+.spacing {
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+
+
+
+
+.carousel-item {
+	display: flex;
+	/* 가로로 정렬 */
+}
+
+.card {
+	flex: 1;
+	/* 카드의 크기를 같게 만듭니다 */
+	margin: 5px;
+	/* 카드 간의 여백 */
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: gray;
+    border-radius: 50%;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    filter: invert(1);
+}
+
+.category-box {
+	overflow: hidden;
+	cursor: pointer;
+	position: relative;
+}
+
+.category-box img {
+	transition: transform 0.3s ease;
+	width: 100%;
+	height: auto;
+}
+
+.category-box:hover img {
+	transform: scale(1.1);
+}
+
+.overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+	opacity: 0;
+	transition: background-color 0.3s ease;
+}
+
+.category-box:hover .overlay {
+	opacity: 1;
+	background-color: rgba(0, 0, 0, 0.7);
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+	width: 5%;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+	background-color: rgba(0, 0, 0, 0.5);
+	border-radius: 50%;
+}
+
+.carousel-control-prev-icon:hover,
+.carousel-control-next-icon:hover {
+	background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Message Bubble Styles */
+.message-bubble {
+	position: relative;
+	background-color: #f8f9fa;
+	border-radius: 10px;
+	padding: 20px;
+	margin: 10px 0;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.message-bubble::after {
+	content: '';
+	position: absolute;
+	bottom: -10px;
+	/* 화살표 위치 조정 */
+	right: 20px;
+	/* 화살표 위치 조정 */
+	border-width: 10px;
+	/* 화살표 크기 조정 */
+	border-style: solid;
+	border-color: #f8f9fa transparent transparent transparent;
+	border: black 1px
+}
+
+.message-bubble h5 {
+	margin-bottom: 10px;
+}
+
+.message-bubble p {
+	margin-bottom: 5px;
+}
+
+.message-bubble .rating {
+	display: flex;
+	justify-content: space-between;
+}

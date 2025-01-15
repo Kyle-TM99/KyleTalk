@@ -1,0 +1,128 @@
+:root {
+  --primary-color: #215EA3;
+  --hover-color: #ffffff;
+  --secondary-color: #f8f9fa; /* 배경색 */
+}
+
+.custom-radio {
+    background-color: var(--hover-color);  /* 배경색 기본 상태 */
+    border: 2px solid var(--primary-color);     /* 테두리 색상 파란색 */
+    color: var(--primary-color);                /* 기본 텍스트 색상 파란색 */
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.custom-radio:hover {
+    background-color: var(--primary-color);
+    color: var(--hover-color);
+    border-color: var(--primary-color);
+}
+
+.custom-radio:active {
+    background-color: var(--primary-color);
+    color: var(--hover-color);
+    border-color: var(--primary-color);
+}
+
+.btn-check:checked + .custom-radio {
+    background-color: var(--primary-color);
+    color: var(--hover-color);
+    border-color: var(--primary-color);
+}
+
+.btn-check:checked + .custom-radio:hover {
+    background-color: var(--primary-color);
+    color: var(--hover-color);
+    border-color: var(--primary-color);
+}
+
+.text-center {
+    text-align: center; /* 텍스트를 가운데 정렬 */
+}
+
+
+
+
+body {
+    background-color: #f7f7f7;
+    font-family: 'Arial', sans-serif;
+}
+
+
+.form-title {
+    font-size: 32px;
+    font-weight: 600;
+    color: #215EA3;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-field {
+    margin-bottom: 15px;
+}
+
+.form-field label {
+    font-weight: bold;
+}
+
+.form-field input,
+.form-field select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+    border-color: #215EA3;
+    box-shadow: 0 0 5px rgba(33, 94, 163, 0.5);
+}
+
+.form-field input[type="radio"],
+.form-field input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+}
+
+.form-field .gender-options input {
+    margin-right: 20px;
+}
+--body {
+background-color: #f9f9f9;
+ }
+   .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+        }
+
+        .btn-primary {
+            background-color: #4A90E2;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #357ABD;
+        }
+
+        .form-floating label {
+            color: #6c757d;
+        }
+
+        .form-floating input:focus {
+            box-shadow: none;
+            border-color: #4A90E2;
+        }
+
+        .kakao-login img {
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .pw-match-message {
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }

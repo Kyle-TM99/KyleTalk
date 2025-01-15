@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="header" class="header-container">
+	<nav class="navbar navbar-expand-lg">
+		<div class="container">
+			<!-- 로고 -->
+			<a class="navbar-brand" href="/mainList">
+				<img src="/images/kylemall3.png" alt="KyleMall" height="35" />
+			</a>
+
+			<!-- 모바일 토글 버튼 -->
+			<button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<!-- 네비게이션 뉴 -->
+			<div class="collapse navbar-collapse" id="navbarContent">
+				<ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+					<li class="nav-item dropdown"><a class="nav-link" href="#" data-bs-toggle="dropdown"> 카테고리 <i class="bi bi-chevron-down"></i>
+					</a>
+						<ul class="dropdown-menu">
+							<li><a class="dropdown-item" href="/productList?category=1">아우터</a></li>
+							<li><a class="dropdown-item" href="/productList?category=2">상의</a></li>
+							<li><a class="dropdown-item" href="/productList?category=3">하의</a></li>
+						</ul>
+					</li>
+					<li class="nav-item dropdown">
+						<a class="nav-link" href="#" data-bs-toggle="dropdown">
+							고객지원 <i class="bi bi-chevron-down"></i>
+						</a>
+						<ul class="dropdown-menu">
+							<li><a class="dropdown-item" href="/faq">FAQ</a></li>
+						</ul>
+					</li>
+					<!-- 관리자 메뉴 -->
+					<th:block th:if="${session.member != null and session.member.isAdmin == true}">
+						<li class="nav-item">
+							<a href="/addProductForm" class="nav-link">상품 등록</a>
+						</li>
+						<li class="nav-item">
+							<a href="/productManagement" class="nav-link">상품 관리</a>
+						</li>
+					</th:block>
+				</ul>
+
+				<!-- 우측 메뉴 -->
+				<div class="d-flex align-items-center gap-3">
+					<!-- 회원일 경우 -->
+					<th:block th:if="${session.isLogin}">
+
+						<a class="nav-link" href="/chat"><i class="bi bi-chat-left-dots"></i></a>
+
+						<!-- 장바구니 -->
+						<a class="nav-link position-relative" href="/shoppingCart">
+							<i class="bi bi-bag"></i>
+							<span class="cart-badge" th:text="${cartCount}">0</span>
+						</a>
+
+						<!-- 프로필 드롭다운 -->
+						<div class="dropdown">
+							<a href="#" class="nav-link" data-bs-toggle="dropdown"> <i class="bi bi-person"></i>
+							</a>
+							<ul class="dropdown-menu dropdown-menu-end">
+								<li><a class="dropdown-item" href="/myPage">마이페이지</a></li>
+								<li>
+									<hr class="dropdown-divider">
+								</li>
+								<li><a class="dropdown-item" href="/memberUpdateForm">회원수정</a></li>
+								<th:block th:if="${session.member != null}">
+									<th:block th:if="${session.member.socialType == 'none'}">
+										<li><a class="dropdown-item" href="/logout">로그아웃</a></li>
+									</th:block>
+									<th:block th:if="${session.member.socialType == 'kakao'}">
+										<li><a class="dropdown-item" href="/oauth/kakao/logout">로그아웃</a></li>
+									</th:block>
+									<th:block th:if="${session.member.socialType == 'google'}">
+										<li><a class="dropdown-item" href="/google/logout">로그아웃</a></li>
+									</th:block>
+								</th:block>
+							</ul>
+						</div>
+					</th:block>
+
+					<!-- 비회원일 경우 -->
+					<th:block th:unless="${session.isLogin}">
+						<a class="nav-link" href="/loginForm">로그인</a>
+						<a class="btn btn-dark btn-sm rounded-pill px-3" href="/joinForm">회원가입</a>
+					</th:block>
+				</div>
+			</div>
+		</div>
+	</nav>
+</div>
+
+</html>

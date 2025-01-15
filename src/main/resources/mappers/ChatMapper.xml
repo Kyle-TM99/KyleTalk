@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kyletalk.sns.mapper.ChatMapper">
+    
+    <delete id="deleteChatRoom" parameterType="String">
+        DELETE FROM chat_room WHERE room_id = #{roomId}
+    </delete>
+
+    <insert id="insertMessage" parameterType="ChatMessage">
+        INSERT INTO chat_message 
+            (room_id, sender, nickname, message, message_type, sent_at)
+        SELECT 
+            #{roomId}, #{sender}, #{nickname}, #{message}, #{type}, #{sentAt}
+        FROM chat_room
+        WHERE room_id = #{roomId}
+    </insert>
+    
+    <select id="getRecentMessages" resultType="ChatMessage">
+        SELECT 
+            message_id as messageId,
+            room_id as roomId,
+            sender,
+            nickname,
+            message,
+            message_type as type,
+            sent_at as sentAt
+        FROM chat_message
+        WHERE room_id = #{roomId}
+        ORDER BY sent_at DESC
+        LIMIT #{limit}
+    </select>
+    
+    <!-- 채팅방 생성 -->
+    <insert id="createChatRoom" parameterType="ChatRoom">
+        INSERT INTO chat_room 
+            (room_id, room_name, created_by, room_admin, room_password, max_users, current_users, created_at)
+        VALUES 
+            (#{roomId}, #{roomName}, #{createdBy}, #{roomAdmin}, #{roomPassword}, #{maxUsers}, #{currentUsers}, #{createdAt})
+    </insert>
+    
+    <!-- 모든 채팅방 조회 -->
+    <select id="getAllChatRooms" resultType="ChatRoom">
+        SELECT 
+            room_id as roomId,
+            room_name as roomName,
+            created_by as createdBy,
+            room_password as roomPassword,
+            max_users as maxUsers,
+            current_users as currentUsers,
+            created_at as createdAt
+        FROM chat_room 
+        ORDER BY created_at DESC
+    </select>
+    
+    <!-- 특정 채팅방 조회 -->
+    <select id="getChatRoomById" resultType="ChatRoom">
+        SELECT 
+            room_id as roomId,
+            room_name as roomName,
+            created_by as createdBy,
+            room_password as roomPassword,
+            max_users as maxUsers,
+            current_users as currentUsers,
+            created_at as createdAt
+        FROM chat_room 
+        WHERE room_id = #{roomId}
+    </select>
+    
+    <!-- 비밀번호 확인 -->
+    <select id="getRoomPassword" resultType="String">
+        SELECT room_password 
+        FROM chat_room 
+        WHERE room_id = #{roomId}
+    </select>
+    
+    <!-- 참여자 추가 -->
+    <insert id="addParticipant">
+        INSERT INTO chat_room_participant (room_id, member_id)
+        VALUES (#{roomId}, #{memberId})
+    </insert>
+    
+    <!-- 참여자 제거 -->
+    <delete id="removeParticipant">
+        DELETE FROM chat_room_participant 
+        WHERE room_id = #{roomId} AND member_id = #{memberId}
+    </delete>
+    
+    <!-- 참여자 확인 -->
+    <select id="isParticipant" resultType="boolean">
+        SELECT COUNT(*) > 0 
+        FROM chat_room_participant
+        WHERE room_id = #{roomId} AND member_id = #{memberId}
+    </select>
+    
+    <!-- 참여자 수 업데이트 -->
+    <update id="updateParticipantCount">
+        UPDATE chat_room
+        SET current_users = #{count}
+        WHERE room_id = #{roomId}
+    </update>
+    
+    <!-- 참여자 수 조회 -->
+    <select id="getParticipantCount" resultType="int">
+        SELECT COUNT(DISTINCT member_id) 
+        FROM chat_room_participant
+        WHERE room_id = #{roomId}
+    </select>
+    
+    <!-- 방장 권한 양도 -->
+    <update id="transferRoomAdmin">
+        UPDATE chat_room
+        SET room_admin = #{newAdmin}
+        WHERE room_id = #{roomId} AND room_admin = #{currentAdmin}
+    </update>
+    
+    <!-- 방장 확인 -->
+    <select id="isRoomAdmin" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM chat_room
+        WHERE room_id = #{roomId} AND room_admin = #{memberId}
+    </select>
+    
+    <!-- 채팅방 참여자 목록 조회 -->
+    <select id="getRoomParticipants" resultType="Member">
+        SELECT DISTINCT m.id, m.nickname, m.profile_image, m.social_type, p.joined_at
+        FROM member m
+        INNER JOIN chat_room_participant p ON m.id = p.member_id
+        WHERE p.room_id = #{roomId}
+        ORDER BY p.joined_at
+    </select>
+    
+</mapper> 

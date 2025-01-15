@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main_layout}">
+<head>
+    <style>
+        .chat-room-card {
+            transition: transform 0.2s;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .chat-room-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .create-room-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .private-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .room-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<th:block layout:fragment="content">
+    <div class="container py-5">
+        <div class="row mb-4">
+            <div class="col">
+                <h2 class="fw-bold">채팅방 목록</h2>
+                <p class="text-muted">참여하고 싶은 채팅방을 선택하거나 새로운 채팅방을 만드세요.</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- 채팅방 카드 -->
+            <div class="col-md-6 col-lg-4" th:each="room : ${chatRooms}">
+                <div class="card chat-room-card">
+                    <div class="card-body position-relative">
+                        <span th:if="${room.private}" class="private-badge badge bg-warning">
+                            <i class="bi bi-lock-fill"></i> 비공개
+                        </span>
+                        <h5 class="card-title" th:text="${room.roomName}">채팅방 이름</h5>
+                        <div class="room-info mt-2">
+                            <p class="mb-1">
+                                <i class="bi bi-people-fill"></i>
+                                <span th:text="${room.currentUsers}">0</span>명 참여 중
+                            </p>
+                            <p class="mb-0">
+                                <i class="bi bi-clock"></i>
+                                <span th:text="${#dates.format(room.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                            </p>
+                        </div>
+                        <div class="mt-3">
+                            <button th:if="${room.private}" 
+                                    class="btn btn-outline-primary w-100"
+                                    th:attr="data-room-id=${room.roomId}"
+                                    onclick="joinPrivateRoom(this.getAttribute('data-room-id'))">
+                                참여하기
+                            </button>
+                            <a th:unless="${room.private}" 
+                               th:href="@{'/chat/' + ${room.roomId}}" 
+                               class="btn btn-primary w-100">
+                                참여하기
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 채팅방 생성 버튼 -->
+        <button class="btn btn-primary create-room-btn d-flex align-items-center justify-content-center" 
+                data-bs-toggle="modal" 
+                data-bs-target="#createRoomModal">
+            <i class="bi bi-plus-lg fs-4"></i>
+        </button>
+    </div>
+    
+    <!-- 채팅방 생성 모달 -->
+    <div class="modal fade" id="createRoomModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">새 채팅방 만들기</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createRoomForm">
+                        <div class="mb-3">
+                            <label class="form-label">채팅방 이름</label>
+                            <input type="text" class="form-control" name="roomName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">최대 참여 인원</label>
+                            <input type="number" class="form-control" name="maxUsers" value="100" min="2" max="100">
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="isPrivate" name="isPrivate">
+                                <label class="form-check-label" for="isPrivate">
+                                    비공개 채팅방
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3" id="passwordField" style="display: none;">
+                            <label class="form-label">비밀번호</label>
+                            <input type="password" class="form-control" name="roomPassword">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" onclick="createRoom()">생성</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 비밀번호 입력 모달 -->
+    <div class="modal fade" id="passwordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">비밀번호 입력</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="selectedRoomId">
+                    <div class="mb-3">
+                        <label class="form-label">비밀번호를 입력하세요</label>
+                        <input type="password" class="form-control" id="roomPassword">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" onclick="verifyPassword()">확인</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script th:inline="javascript">
+        $(document).ready(function() {
+            // 비공개방 체크박스 이벤트
+            $('#isPrivate').change(function() {
+                $('#passwordField').toggle(this.checked);
+            });
+        });
+
+        function createRoom() {
+            const form = $('#createRoomForm');
+            const formData = new FormData(form[0]);
+            
+            const roomData = {
+                roomName: formData.get('roomName'),
+                maxUsers: parseInt(formData.get('maxUsers')),
+                roomPassword: formData.get('isPrivate') === 'on' ? formData.get('roomPassword') : null
+            };
+
+            $.ajax({
+                url: '/api/chat/rooms',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(roomData),
+                success: function(response) {
+                    if(response.success && response.roomId) {
+                        // 모달 닫기
+                        $('#createRoomModal').modal('hide');
+                        
+                        // 성공 시 채팅방으로 리다이렉션
+                        window.location.href = '/chat/' + response.roomId;
+                    } else {
+                        alert('채팅방 생성에 실패했습니다: ' + (response.error || '알 수 없는 오류'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    alert('채팅방 생성 중 오류가 발생했습니다.');
+                }
+            });
+        }
+
+        function joinPrivateRoom(roomId) {
+            $('#selectedRoomId').val(roomId);
+            $('#passwordModal').modal('show');
+        }
+
+        function verifyPassword() {
+            const roomId = $('#selectedRoomId').val();
+            const password = $('#roomPassword').val();
+
+            $.ajax({
+                url: `/api/chat/rooms/${roomId}/verify`,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ password: password }),
+                success: function(data) {
+                    if(data.success) {
+                        window.location.href = '/chat/' + roomId;
+                    } else {
+                        alert('비밀번호가 일치하지 않습니다.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    alert('비밀번호 확인에 실패했습니다.');
+                }
+            });
+        }
+    </script>
+</th:block>
+</html> 

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="footer" class="footer-container">
+    <footer>
+        <div class="container py-5">
+            <div class="row g-5">
+                <!-- 로고 및 설명 -->
+                <div class="col-lg-5">
+                    <a href="mainList" class="footer-logo">
+                        <img src="/images/kylemall2.png" alt="KyleMall" height="22"/>
+                    </a>
+                    <p class="mt-4 text-muted pe-lg-5">
+                        KYLEMALL은 당신의 스타일을 완성하는 프리미엄 쇼핑몰입니다.
+                    </p>
+                </div>
+
+                <!-- 링크 섹션 -->
+                <div class="col-lg-7">
+                    <div class="row">
+                        <!-- 고객 서비스 -->
+                        <div class="col-6 col-md-4 text-center">
+                            <h6 class="footer-heading">고객 서비스</h6>
+                            <ul class="footer-links text-center">
+                                <li><a href="/faq">FAQ</a></li>
+                                <li><a href="/chat">고객상담</a></li>
+                                <li><a href="#">이용안내</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- 쇼핑 안내 -->
+                        <div class="col-6 col-md-4 text-center">
+                            <h6 class="footer-heading">쇼핑 안내</h6>
+                            <ul class="footer-links">
+                                <li><a href="#">주문조회</a></li>
+                                <li><a href="#">배송안내</a></li>
+                                <li><a href="#">교환/반품</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- 회사 정보 -->
+                        <div class="col-md-4 mt-4 mt-md-0 text-center">
+                            <h6 class="footer-heading">Follow Us</h6>
+                            <div class="social-links">
+                                <a href="#"><i class="bi bi-instagram"></i></a>
+                                <a href="#"><i class="bi bi-facebook"></i></a>
+                                <a href="#"><i class="bi bi-github"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 카피라이트 -->
+        <div class="footer-bottom">
+            <div class="container py-3">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <span class="copyright">© 2024 KYLEMALL. All rights reserved.</span>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+                        <span class="company-info">프로젝트 명: KYLEMALL | 개발자: Kyle | 이메일: rlaxoals9977@gmail.com</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<style>
+.footer-container {
+    background-color: #fff;
+    border-top: 1px solid #eee;
+    margin-top: 120px;
+}
+
+.footer-logo {
+    display: inline-block;
+}
+
+.footer-heading {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: #111;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+    color: #111;
+}
+
+.social-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-links a {
+    color: #666;
+    font-size: 1.25rem;
+    transition: color 0.2s ease;
+}
+
+.social-links a:hover {
+    color: #111;
+}
+
+.footer-bottom {
+    background-color: #f9f9f9;
+    border-top: 1px solid #eee;
+}
+
+.copyright, .company-info {
+    font-size: 0.813rem;
+    color: #888;
+}
+
+@media (max-width: 768px) {
+    .footer-container {
+        margin-top: 80px;
+    }
+    
+    .footer-heading {
+        margin-top: 1.5rem;
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
+}
+</style>
+</html>

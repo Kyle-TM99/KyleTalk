@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/main_layout}">
+
+<head>
+	<link th:href="@{/css/joinForm.css}" rel="stylesheet">
+	<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</head>
+<body>
+<div layout:fragment="content"
+	class="d-flex align-items-center justify-content-center"
+	style="min-height: 90vh;">
+	<div class="d-flex align-items-center justify-content-center vh-80">
+		<div class="container">
+			<h3 class="fw-bold mt-5 text-center">추가 정보 기입</h3>
+			<p class="text-muted mt-3 mb-5 text-center">쉽고 간편한 외주 서비스</p>
+			<div class="card" style="width: 100%; max-width: 500px;">
+				<form action="/oauth/kakao/register" method="post">
+				<input type="hidden" name="memberId" th:value="${kakaoId}">
+					<input type="hidden" name="name" th:value="${nickname}">
+					<input type="hidden" name="memberImage" th:value="${profileImage}">
+
+					<div class="row mb-3">
+						<div class="form-field">
+							<label for="nickname" class="fw-bold">&nbsp;닉네임 *</label>
+							<input type="text" class="form-control mb-2" id="nickname" name="nickname" required>
+							<small id="nicknameMessage" class="form-text"></small>
+						</div>
+					</div>
+
+					<div class="row mb-3">
+						<div class="form-field">
+							<label for="birth" class="fw-bold">&nbsp;생년월일 *</label>
+							<input id="birth" name="birth" type="date" class="form-control mb-2" required>
+						</div>
+					</div>
+
+					<div class="row mb-3">
+						<div class="form-field">
+							<label class="fw-bold">&nbsp;성별 *</label>
+							<div class="d-flex mb-2">
+								<div class="form-check me-4">
+									<input class="form-check-input" type="radio" name="gender" id="male" value="male" required>
+									<label class="form-check-label" for="male">남성</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="radio" name="gender" id="female" value="female" required>
+									<label class="form-check-label" for="female">여성</label>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="row mb-3">
+						<div class="form-field">
+							<label for="email" class="fw-bold">&nbsp;이메일 *</label>
+							<input type="email" class="form-control mb-2" id="email" name="email" required>
+							<small id="emailMessage" class="form-text"></small>
+						</div>
+						<div class="mb-3 ms-1">
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" id="emailConsent" name="emailConsent" checked>
+								<label class="form-check-label" for="emailConsent">이메일 수신에 동의합니다.</label>
+							</div>
+						</div>
+					</div>
+
+					<div class="row mb-3">
+						<div class="form-field">
+							<label for="phone" class="fw-bold">&nbsp;전화번호 *</label>
+							<input type="tel" class="form-control mb-2" id="phone" name="phone" required>
+							<small id="phoneMessage" class="form-text"></small>
+						</div>
+					</div>
+
+					<div class="row mb-3">
+						<div class="form-field">
+							<label for="zipcode" class="fw-bold">&nbsp;우편번호 *</label>
+							<div class="input-group mb-2">
+								<input type="text" class="form-control" id="zipcode" name="zipcode" readonly required>
+								<button type="button" class="custom-button2" id="addressSearchBtn">주소찾기</button>
+							</div>
+						</div>
+					</div>
+
+					<div class="row mb-3">
+						<div class="form-field">
+							<label for="address" class="fw-bold">&nbsp;주소 *</label>
+							<input type="text" class="form-control mb-2" id="address" name="address" readonly required>
+						</div>
+					</div>
+
+					<div class="row mb-3">
+						<div class="form-field">
+							<label for="address2" class="fw-bold">&nbsp;상세주소 *</label>
+							<input type="text" class="form-control mb-2" id="address2" name="address2" required>
+						</div>
+					</div>
+					<button type="submit" class="custom-button2 w-100 my-5">회원가입</button>
+
+				</form>
+
+			</div>
+		</div>
+	</div>
+</div>
+<th:block layout:fragment="script">
+    <script th:src="@{/js/join.js}"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</th:block>
+</body>
+</html>

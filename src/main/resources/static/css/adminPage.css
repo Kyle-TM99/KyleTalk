@@ -1,0 +1,197 @@
+@charset "UTF-8";
+/* 이헌복 - 관리자 메인 css */
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* 사이드바 */
+.sidebar h4 {
+    color: #f8f9fa;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* 아코디언 */
+.accordion-item {
+    background-color: transparent;
+    border: none;
+}
+
+/* 아코디언 버튼 */
+.accordion-button {
+    background-color: transparent;
+    color: #adb5bd;
+    font-size: 0.95rem;
+    padding: 10px 15px;
+    outline: none;
+    box-shadow: none;
+}
+
+/* 아코디언 호버, 아코디언을 눌러서 세부카테교리가 열린 상태이면 스타일 지속 */
+.accordion-button:hover,
+.accordion-button:not(.collapsed) {
+    background-color: #495057;
+    color: #f8f9fa;
+    outline: none; 
+    box-shadow: none;
+}
+
+/* 아코디언 목록 영역 */
+.accordion-body {
+    padding: 0; 
+}
+
+/* 아코디언 내부 링크 스타일 */
+.accordion-body a {
+    color: #adb5bd;
+    text-decoration: none;
+    display: block;
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/* 세부카테고리 링크 호버 */
+.accordion-body a:hover {
+    background-color: #343a40;
+    color: #f8f9fa;
+    cursor: pointer;
+}
+
+/* 링크 클릭 시 */
+.accordion-body a.active {
+    background-color: #007bff;
+    color: #fff;
+}
+
+/* 콘텐츠 영역 */
+.content {
+    background-color: #ccc; /* 배경색 */
+}
+
+/* 헤더 스타일 */
+.header {
+    background-color: #fff;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 헤더 관리자명 스타일 */
+.header span {
+    color: #212529;
+    font-weight: bold;
+}
+
+.simple-pagination {
+    border: none !important;
+    background: none !important;
+    color: #666 !important;
+    margin: 0 5px !important;
+    padding: 5px 10px !important;
+    font-size: 14px !important;
+}
+
+.simple-pagination.active {
+    background: #1a1a1a !important;
+    color: white !important;
+    border-radius: 50% !important;
+}
+
+.simple-pagination:hover:not(.active) {
+    color: #1a1a1a !important;
+    background: #f0f0f0 !important;
+    border-radius: 50% !important;
+}
+
+/* Previous, Next 버튼 스타일 */
+.page-item:first-child .simple-pagination,
+.page-item:last-child .simple-pagination {
+    border-radius: 20px !important;
+    padding: 5px 15px !important;
+}
+
+/* 페이지네이션 컨테이너 스타일 */
+.pagination {
+    margin: 0;
+    padding: 15px 0;
+}
+
+/* 페이지네이션 아이템 기본 스타일 */
+.page-item .page-link {
+    border: none !important;
+    background: none !important;
+    color: #666 !important;
+    margin: 0 5px !important;
+    padding: 5px 10px !important;
+    font-size: 14px !important;
+    border-radius: 50% !important;
+}
+
+/* 활성화된 페이지 스타일 */
+.page-item.active .page-link {
+    background: #1a1a1a !important;
+    color: white !important;
+    border-radius: 50% !important;
+}
+
+/* 호버 효과 */
+.page-item:not(.active):not(.disabled) .page-link:hover {
+    color: #1a1a1a !important;
+    background: #f0f0f0 !important;
+    border-radius: 50% !important;
+}
+
+/* 이전, 다음 버튼 스타일 */
+.page-item:first-child .page-link,
+.page-item:last-child .page-link {
+    border-radius: 20px !important;
+    padding: 5px 15px !important;
+}
+
+/* 비활성화된 페이지네이션 아이템 */
+.page-item.disabled .page-link {
+    color: #ccc !important;
+    cursor: not-allowed;
+}
+
+/* 정렬 */
+.table th.sortable {
+    position: relative;
+    padding-right: 25px; /* 정렬 아이콘을 위한 공간 확보 */
+}
+
+.sort-icon {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    flex-direction: column;
+    line-height: 1;
+}
+
+/* 정렬 화살표 기본 스타일 */
+.sort-icon span {
+    color: #ccc;
+    font-size: 10px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+/* 활성화된 화살표 스타일 */
+.sort-icon span.active {
+    color: #000;
+}
+
+/* 정렬 가능한 열 스타일 */
+.sortable {
+    cursor: pointer;
+}
+
+/* 정렬 가능한 열 호버 효과 */
+.sortable:hover .sort-icon span {
+    color: #666;
+}

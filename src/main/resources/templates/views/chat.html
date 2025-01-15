@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main_layout}">
+<head>
+	    <style>
+        /* 전체 채팅방 컨테이너 */
+        .chat-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 채팅방 헤더 */
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            background: #fff;
+            border-radius: 16px 16px 0 0;
+        }
+
+        /* 채팅 메시지 영역 */
+        .chat-messages-container {
+            height: 600px;
+            padding: 20px;
+            background: #f8f9fa;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .chat-message {
+            margin-bottom: 1rem;
+            max-width: 85%;
+        }
+
+        .message-bubble {
+            padding: 10px 16px;
+            border-radius: 16px;
+            word-break: break-word;
+            white-space: pre-wrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .chat-message.mine {
+            margin-left: auto;
+        }
+
+        .chat-message.mine .message-bubble {
+            background-color: #007AFF;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-message.other .message-bubble {
+            background-color: white;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* 입력 영역 */
+        .chat-input-container {
+            padding: 20px;
+            background: #fff;
+            border-top: 1px solid #eee;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 24px;
+            padding: 8px 16px;
+            border: 1px solid #eee;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .send-button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .send-button:hover {
+            background: #0056b3;
+        }
+
+        .notice-message {
+            width: 100%;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .notice-message .alert {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 20px;
+            background-color: #FFF3CD;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            margin: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* 참여자 목록 사이드바 */
+        #participantsSidebar {
+            background: #fff;
+            border-left: 1px solid #eee;
+            padding: 20px;
+            min-width: 250px;
+        }
+
+        .participant-item {
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .participant-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .admin-badge {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background-color: #007AFF;
+        }
+
+        /* 스크롤바 스타일링 */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+    </style>
+</head>
+<th:block layout:fragment="head">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</th:block>
+<th:block layout:fragment="content">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-lg border-0" style="border-radius: 20px;">
+                    <!-- 채팅방 헤더 -->
+                    <div class="card-header bg-white border-0 py-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <h4 class="mb-0 fw-light">[[${room.roomName}]]</h4>
+                                <button class="btn btn-outline-primary btn-sm ms-2" onclick="toggleParticipantsList()">
+                                    참여자 목록 <span class="badge bg-secondary" id="participantCount">0</span>
+                                </button>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-outline-danger btn-sm me-2" onclick="leaveRoom()">
+                                    <i class="bi bi-box-arrow-right"></i> 나가기
+                                </button>
+                                <div th:if="${room.roomAdmin == session.member.id}" class="me-2">
+                                    <div class="dropdown">
+                                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            방장 메뉴
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="showTransferAdminModal()">방장 위임</a></li>
+                                            <li><a class="dropdown-item" th:href="@{'/chat/' + ${room.roomId} + '/delete'}">방 삭제</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 채팅 영역을 감싸는 컨테이너 수정 -->
+                    <div class="d-flex">
+                        <!-- 기존 채팅 영역 -->
+                        <div class="chat-main flex-grow-1">
+                            <div class="card-body p-4 bg-light" style="height: 600px;">
+                                <!-- 기존 채팅 메시지 영역 -->
+                                <div id="chat-messages" class="mb-4" style="height: 520px; overflow-y: auto;">
+                                    <!-- 채팅 메시지들이 여기에 표시됩니다 -->
+                                </div>
+
+                                <!-- 메시지 입력 영역 -->
+                                <div class="chat-input-container">
+                                    <div class="chat-input-wrapper">
+                                        <input type="text" id="message" class="chat-input" placeholder="메시지를 입력하세요...">
+                                        <div class="form-check mx-2" th:if="${session.member.isAdmin}">
+                                            <input class="form-check-input" type="checkbox" id="isNotice">
+                                            <label class="form-check-label" for="isNotice">공지</label>
+                                        </div>
+                                        <button class="send-button" type="button" id="send">
+                                            <i class="bi bi-send-fill"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 참여자 목록 사이드바 -->
+                        <div class="participants-sidebar shadow-sm" id="participantsSidebar" style="display: none; width: 250px; border-left: 1px solid #dee2e6;">
+                            <div class="p-3">
+                                <h5 class="mb-3">참여자 목록</h5>
+                                <div id="participantsList" class="list-group">
+                                    <!-- 참여자 목록이 여기에 동적으로 추가됨 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 방장 위임 모달 -->
+    <div class="modal fade" id="transferAdminModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">방장 위임</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>새로운 방장을 선택하세요:</p>
+                    <select class="form-select" id="newAdminSelect">
+                        <!-- 참여자 목록이 동적으로 추가됨 -->
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" onclick="transferAdmin()">위임</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script th:inline="javascript">
+        let stompClient = null;
+        const memberId = /*[[${session.member.id}]]*/ 'default';
+        const nickname = /*[[${session.member.nickname}]]*/ 'default';
+        const socialType = /*[[${session.member.socialType}]]*/ 'none';
+        const profileImage = /*[[${session.member.profileImage}]]*/ null;
+        const roomId = /*[[${room.roomId}]]*/ 'default';
+
+        // 디버깅용 로그
+        console.log('Member info:', {
+            memberId,
+            nickname,
+            socialType,
+            profileImage
+        });
+
+        function connect() {
+            if(!memberId) {
+                console.error('Username not set');
+                window.location.href = '/loginForm';
+                return;
+            }
+
+            const socket = new SockJS('/ws-chat');
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function(frame) {
+                console.log('Connected:', frame);
+                
+                // 특정 채팅방만 구독
+                stompClient.subscribe('/topic/room/' + roomId, function(message) {
+                    console.log('Received:', message);
+                    onMessageReceived(message);
+                });
+
+                // 입장 시 참여자 목록 로드
+                loadParticipants();
+
+                // 입장 메시지 전송
+                stompClient.send("/app/chat/room/" + roomId + "/addUser", {}, 
+                    JSON.stringify({
+                        sender: memberId,
+                        nickname: nickname,
+                        type: 'JOIN',
+                        roomId: roomId,
+                        message: nickname + ' 님이 입장하셨습니다!'
+                    })
+                );
+
+            }, function(error) {
+                console.error('Connection error:', error);
+                setTimeout(connect, 5000);
+            });
+        }
+
+        function sendMessage() {
+            const messageInput = document.querySelector('#message');
+            const messageContent = messageInput.value.trim();
+            const isNoticeCheckbox = document.querySelector('#isNotice');
+            const isNotice = isNoticeCheckbox ? isNoticeCheckbox.checked : false;
+            
+            if(messageContent && memberId) {
+                const chatMessage = {
+                    sender: memberId,
+                    nickname: nickname,
+                    message: messageContent,
+                    type: isNotice ? 'NOTICE' : 'CHAT',
+                    roomId: roomId,
+                    socialType: socialType,
+                    profileImage: profileImage
+                };
+                
+                if(stompClient && stompClient.connected) {
+                    stompClient.send("/app/chat/room/" + roomId + "/sendMessage", {}, JSON.stringify(chatMessage));
+                    messageInput.value = '';
+                } else {
+                    console.error('STOMP client not connected');
+                    connect();
+                }
+            }
+        }
+
+        function onMessageReceived(payload) {
+            const message = JSON.parse(payload.body);
+            const messageElement = document.createElement('div');
+            
+            if(message.type === 'JOIN') {
+                messageElement.classList.add('event-message');
+                messageElement.innerHTML = `<p class="text-muted"><em>${message.message}</em></p>`;
+            } else if (message.type === 'LEAVE') {
+                messageElement.classList.add('event-message');
+                messageElement.innerHTML = `<p class="text-muted"><em>${message.message}</em></p>`;
+            } else if (message.type === 'NOTICE') {
+                messageElement.classList.add('notice-message');
+                messageElement.innerHTML = `
+                    <div class="alert alert-warning mb-2">
+                        <strong>[공지사항] ${message.sender}:</strong> ${message.message}
+                    </div>
+                `;
+            } else if (message.type === 'CHAT') {
+                messageElement.classList.add('chat-message');
+                const isMine = message.sender === memberId;
+                messageElement.classList.add(isMine ? 'mine' : 'other');
+                
+                messageElement.innerHTML = `
+                    <div class="d-flex ${isMine ? 'justify-content-end' : 'justify-content-start'} mb-2">
+                        ${!isMine ? getProfileElement(message.sender, message.nickname, message.profileImage, message.socialType) : ''}
+                        <div class="message-content ms-2 me-2">
+                            ${!isMine ? `<div class="fw-bold sender-name">${message.nickname}</div>` : ''}
+                            <div class="message-bubble">${message.message}</div>
+                            <small class="text-muted timestamp">${new Date().toLocaleTimeString()}</small>
+                        </div>
+                        ${isMine ? getProfileElement(message.sender, message.nickname, message.profileImage, message.socialType) : ''}
+                    </div>
+                `;
+            }
+
+            const messageArea = document.querySelector('#chat-messages');
+            messageArea.appendChild(messageElement);
+            messageArea.scrollTop = messageArea.scrollHeight;
+        }
+
+        // 프로필 요소를 반환하는 함수 추가
+        function getProfileElement(sender, nickname, profileImage, socialType) {
+            // 관리자 계정인 경우
+            if (sender === 'admin') {
+                return `
+                    <div class="chat-avatar d-flex align-items-center justify-content-center" 
+                         style="width: 40px; height: 40px; border-radius: 50%; background-color: #FF5722; color: white; font-weight: bold;">
+                        A
+                    </div>
+                `;
+            } 
+            // 소셜 계정이고 프로필 이미지가 있는 경우
+            if (socialType !== 'none' && profileImage) {
+                console.log('Social profile:', {socialType, profileImage}); // 디버깅용
+                return `
+                    <div class="chat-avatar">
+                        <img src="${profileImage}" alt="${nickname}" 
+                             style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                    </div>
+                `;
+            }
+            // 일반 계정이거나 프로필 이미지가 없는 경우
+            return `
+                <div class="chat-avatar d-flex align-items-center justify-content-center" 
+                     style="width: 40px; height: 40px; border-radius: 50%; background-color: ${getAvatarColor(sender)}; color: white; font-weight: bold;">
+                    ${nickname.charAt(0).toUpperCase()}
+                </div>
+            `;
+        }
+
+        // 페이지 로드 시 연결 시작
+        document.addEventListener('DOMContentLoaded', function() {
+            // 버튼 이벤트 리스너 등록
+            const sendButton = document.querySelector('#send');
+            if(sendButton) {
+                sendButton.addEventListener('click', sendMessage);
+            }
+
+            // 엔터키 이벤트 리스너 등록
+            const messageInput = document.querySelector('#message');
+            if(messageInput) {
+                messageInput.addEventListener('keypress', function(e) {
+                    if(e.key === 'Enter') {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+            }
+
+            // WebSocket 연결 시작
+            connect();
+
+            const isAdmin = /*[[${session.member.isAdmin}]]*/ false;
+            const noticeCheckbox = document.querySelector('#isNotice');
+            
+            if (!isAdmin) {
+                noticeCheckbox.style.display = 'none';
+                noticeCheckbox.nextElementSibling.style.display = 'none';
+            }
+        });
+
+        // 페이지 언로드 시 연결 종료
+        window.addEventListener('beforeunload', function() {
+            if(stompClient) {
+                stompClient.disconnect();
+            }
+        });
+
+        function getAvatarColor(messageSender) {
+            let hash = 0;
+            for (let i = 0; i < messageSender.length; i++) {
+                hash = 31 * hash + messageSender.charCodeAt(i);
+            }
+            const colors = [
+                '#2196F3', '#32c787', '#00BCD4', '#ff5652',
+                '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
+            ];
+            return colors[Math.abs(hash % colors.length)];
+        }
+
+        function showTransferAdminModal() {
+            loadParticipants(true);  // true는 모달용 로드를 의미
+            $('#transferAdminModal').modal('show');
+        }
+
+        function transferAdmin() {
+            const newAdminId = $('#newAdminSelect').val();
+            
+            $.ajax({
+                url: `/api/chat/rooms/${roomId}/transfer-admin`,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ newAdminId: newAdminId }),
+                success: function(response) {
+                    if (response.success) {
+                        alert('방장 권한이 이전되었습니다.');
+                        location.reload();
+                    } else {
+                        alert(response.error || '방장 권한 이전에 실패했습니다.');
+                    }
+                    $('#transferAdminModal').modal('hide');
+                },
+                error: function(xhr, status, error) {
+                    alert('오류가 발생했습니다.');
+                }
+            });
+        }
+
+        let isParticipantsVisible = false;
+        
+        function toggleParticipantsList() {
+            const sidebar = document.getElementById('participantsSidebar');
+            isParticipantsVisible = !isParticipantsVisible;
+            sidebar.style.display = isParticipantsVisible ? 'block' : 'none';
+            
+            if (isParticipantsVisible) {
+                loadParticipants();
+            }
+        }
+        
+        function loadParticipants(forModal = false) {
+            fetch(`/api/chat/rooms/${roomId}/participants`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const participants = data.participants;
+                        
+                        if (forModal) {
+                            // 모달의 select 옵션 업데이트
+                            const select = document.getElementById('newAdminSelect');
+                            select.innerHTML = '';
+                            participants.forEach(participant => {
+                                if (participant.id !== /*[[${session.member.id}]]*/) {
+                                    const option = new Option(participant.nickname, participant.id);
+                                    select.add(option);
+                                }
+                            });
+                        } else {
+                            // 사이드바의 참여자 목록 업데이트
+                            const participantsList = document.getElementById('participantsList');
+                            participantsList.innerHTML = '';
+                            
+                            participants.forEach(participant => {
+                                const item = document.createElement('div');
+                                item.className = 'list-group-item d-flex align-items-center';
+                                
+                                const isAdmin = participant.id === /*[[${room.roomAdmin}]]*/ '';
+                                
+                                item.innerHTML = `
+                                    <div class="d-flex align-items-center">
+                                        ${participant.profileImage ? 
+                                            `<img src="${participant.profileImage}" class="participant-avatar me-2">` :
+                                            `<div class="participant-avatar me-2 d-flex align-items-center justify-content-center" 
+                                                  style="background-color: ${getAvatarColor(participant.id)}">
+                                                ${participant.nickname.charAt(0)}
+                                             </div>`
+                                        }
+                                        <div>
+                                            <div class="fw-bold">${participant.nickname}</div>
+                                            ${isAdmin ? '<span class="badge bg-primary admin-badge">방장</span>' : ''}
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                participantsList.appendChild(item);
+                            });
+                            
+                            // 참여자 수 업데이트
+                            document.getElementById('participantCount').textContent = data.count;
+                        }
+                    } else {
+                        console.error('참여자 목록을 불러오는데 실패했습니다:', data.error);
+                    }
+                });
+        }
+        
+        // 페이지 로드 시 참여자 목록 자동 업데이트 시작
+        setInterval(() => {
+            if (document.getElementById('participantsSidebar').style.display !== 'none') {
+                loadParticipants();
+            }
+        }, 5000);  // 5초마다 업데이트
+
+        function leaveRoom() {
+            if (confirm('채팅방을 나가시겠습니까?')) {
+                // CSRF 토큰 가져오기
+                const token = $("meta[name='_csrf']").attr("content");
+                const header = $("meta[name='_csrf_header']").attr("content");
+                
+                // 퇴장 메시지 객체
+                const leaveMessage = {
+                    sender: memberId,
+                    nickname: nickname,
+                    type: 'LEAVE',
+                    roomId: roomId,
+                    message: nickname + ' 님이 퇴장하셨습니다.'
+                };
+
+                // 서버에 참여자 제거 요청
+                $.ajax({
+                    url: `/api/chat/rooms/${roomId}/leave`,
+                    type: 'POST',
+                    data: JSON.stringify(leaveMessage),  // 데이터를 JSON 문자열로 변환
+                    contentType: 'application/json',
+                    headers: {
+                        [header]: token  // CSRF 토큰을 헤더에 추가
+                    },
+                    success: function(response) {
+                        console.log('Leave response:', response);  // 디버깅용 로그
+                        if (response.success) {
+                            // 퇴장 메시지 전송
+                            stompClient.send("/app/chat/room/" + roomId + "/sendMessage", {}, JSON.stringify(leaveMessage));
+                            
+                            // WebSocket 연결 종료
+                            if (stompClient) {
+                                stompClient.disconnect();
+                            }
+                            
+                            // 채팅방 목록 페이지로 이동
+                            window.location.href = '/chat';
+                        } else {
+                            console.error('Leave room failed:', response.error);
+                            alert(response.error || '채팅방을 나가는데 실패했습니다.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error details:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText,
+                            xhr: xhr
+                        });
+                        alert('채팅방을 나가는데 실패했습니다. 다시 시도해주세요.');
+                    }
+                });
+            }
+        }
+    </script>
+</th:block>
+</html> 

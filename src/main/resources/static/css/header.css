@@ -1,0 +1,204 @@
+/* 메인 메뉴 스타일 */
+.main-menu {
+  position: relative;
+  width: 100%;
+  overflow: visible;
+}
+
+/* 서브메뉴 스타일 */
+.submenu-container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  min-width: 600px;
+  max-width: 800px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease-in-out;
+  margin-top: 1px;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 서브메뉴 표시 클래스 */
+.submenu-container.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 헤더 메뉴 호버 효과 */
+.left-menu .nav-link:hover {
+  color: #007bff;
+  background-color: rgba(0, 123, 255, 0.1);
+  border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 서브메뉴 항목 스타일 */
+.submenu-container h6 {
+  padding: 10px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  margin: 0;
+  font-weight: bold;
+  color: #333;
+}
+
+.submenu-container .col-md-4 {
+  padding: 0 20px;
+  text-align: left;
+}
+
+.submenu-container .col-md-4 a {
+  display: block;
+  padding: 10px 15px;
+  color: #555;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.submenu-container .col-md-4 a:hover {
+  color: #007bff;
+  font-weight: bold;
+  background-color: rgba(0, 123, 255, 0.1);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .main-menu {
+    display: none;
+  }
+}
+
+/* navbar 스타일 */
+.navbar {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.nav-link.px-3 {
+  padding-top: 20px !important;
+  padding-bottom: 20px !important;
+}
+
+/* 모달 스타일 */
+.modal {
+  background: none !important;
+}
+
+.modal .modal-dialog {
+  position: fixed;
+  left: auto;
+  top: 60px;
+  margin: 0;
+  width: 350px;
+}
+
+.modal .modal-content {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.modal .modal-header {
+  padding: 15px 20px;
+}
+
+.modal .modal-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.modal .modal-body {
+  padding: 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* 채팅 및 알림 아이템 스타일 */
+.chat-item,
+.notification-item {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.chat-item:hover,
+.notification-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* 뱃지 스타일 */
+.badge.rounded-pill,
+.notification-item .badge {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* 오른쪽 메뉴 스타일 */
+.right-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.right-menu::after {
+  content: '';
+  height: 24px;
+  width: 1px;
+  background-color: #e5e7eb;
+  margin: 0 0.5rem;
+}
+
+/* 프로필 드롭다운 스타일 */
+.profile-link .fa-chevron-down {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+
+.profile-link[aria-expanded="true"] .fa-chevron-down {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  margin-top: 0.5rem;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.dropdown-item {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: #3b82f6;
+}
+
+.dropdown-item.text-danger:hover {
+  background-color: #fff5f5;
+  color: #dc3545;
+}
+
+/* 버튼 간격 조정 */
+.btn-outline-secondary.btn-sm {
+  margin-right: 4px;
+}
+
+/* 오른쪽 메뉴 호버 효과 */
+.right-menu .nav-link:hover {
+  color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+  border-radius: 4px;
+}
+
+/* 아이콘 호버 효과 */
+.right-menu .nav-link i:hover {
+  color: #3b82f6;
+  transform: scale(1.1);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
