@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/main_layout}">
+
+<head>
+	<style>
+		.hero {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			padding: 80px 0;
+			color: white;
+			text-align: center;
+		}
+
+		.feature-card {
+			border-radius: 15px;
+			border: none;
+			transition: transform 0.3s ease;
+			background: white;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.feature-card:hover {
+			transform: translateY(-5px);
+		}
+
+		.chat-preview {
+			background: #f8f9fa;
+			border-radius: 15px;
+			padding: 20px;
+			margin-bottom: 20px;
+		}
+
+		.chat-bubble {
+			background: white;
+			border-radius: 20px;
+			padding: 15px;
+			margin: 10px 0;
+			max-width: 80%;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.chat-bubble.right {
+			margin-left: auto;
+			background: #007bff;
+			color: white;
+		}
+
+		.stats-card {
+			text-align: center;
+			padding: 30px;
+			border-radius: 15px;
+			background: white;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.stats-number {
+			font-size: 2.5rem;
+			font-weight: bold;
+			color: #007bff;
+		}
+
+		.join-section {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			padding: 80px 0;
+			color: white;
+			text-align: center;
+			border-radius: 15px;
+			margin: 40px 0;
+		}
+	</style>
+</head>
+
+<body>
+	<th:block layout:fragment="content">
+		<!-- Hero Section -->
+		<section class="hero">
+			<div class="container">
+				<h1 class="display-4 mb-4">실시간으로 소통하세요</h1>
+				<p class="lead mb-5">안전하고 빠른 채팅 플랫폼, KyleTalk에서 시작하세요</p>
+				<a href="/chat" class="btn btn-light btn-lg px-5 py-3">채팅 시작하기</a>
+			</div>
+		</section>
+
+		<!-- Features Section -->
+		<section class="py-5">
+			<div class="container">
+				<h2 class="text-center mb-5">주요 기능</h2>
+				<div class="row g-4">
+					<div class="col-md-4">
+						<div class="feature-card card h-100 p-4">
+							<div class="card-body text-center">
+								<i class="bi bi-chat-dots fs-1 text-primary mb-3"></i>
+								<h4>실시간 채팅</h4>
+								<p>빠르고 안정적인 실시간 메시지 전송</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="feature-card card h-100 p-4">
+							<div class="card-body text-center">
+								<i class="bi bi-people fs-1 text-primary mb-3"></i>
+								<h4>그룹 채팅</h4>
+								<p>여러 사람과 함께하는 그룹 채팅방</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="feature-card card h-100 p-4">
+							<div class="card-body text-center">
+								<i class="bi bi-shield-check fs-1 text-primary mb-3"></i>
+								<h4>보안 채팅</h4>
+								<p>안전한 대화를 위한 보안 시스템</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Chat Preview Section -->
+		<section class="py-5 bg-light">
+			<div class="container">
+				<h2 class="text-center mb-5">채팅 미리보기</h2>
+				<div class="chat-preview">
+					<div class="chat-bubble">안녕하세요! KyleTalk에 오신 것을 환영합니다.</div>
+					<div class="chat-bubble right">네, 반갑습니다!</div>
+					<div class="chat-bubble">실시간으로 대화를 나눠보세요.</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Stats Section -->
+		<section class="py-5">
+			<div class="container">
+				<div class="row g-4">
+					<div class="col-md-4">
+						<div class="stats-card">
+							<div class="stats-number">1M+</div>
+							<p class="mb-0">활성 사용자</p>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="stats-card">
+							<div class="stats-number">5M+</div>
+							<p class="mb-0">일일 메시지</p>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="stats-card">
+							<div class="stats-number">100K+</div>
+							<p class="mb-0">채팅방</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Join Section -->
+		<section class="join-section">
+			<div class="container">
+				<h2 class="mb-4">지금 바로 시작하세요</h2>
+				<p class="lead mb-4">새로운 대화의 시작, KyleTalk이 함께합니다</p>
+				<a href="/chat" class="btn btn-light btn-lg px-5">채팅방 입장하기</a>
+			</div>
+		</section>
+	</th:block>
+
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

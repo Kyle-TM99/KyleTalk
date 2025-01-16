@@ -70,8 +70,8 @@ public class ChatController {
         Member member = (Member) session.getAttribute("member");
         
         // 이미 참여 중인지 확인
-        if(!chatMapper.isParticipant(roomId, member.getId())) {
-            chatMapper.addParticipant(roomId, member.getId());
+        if(!chatMapper.isParticipant(roomId, member.getMemberId())) {
+            chatMapper.addParticipant(roomId, member.getMemberId());
             // 현재 참여자 수를 가져와서 1 증가
             int currentCount = chatMapper.getParticipantCount(roomId);
             chatMapper.updateParticipantCount(roomId, currentCount);
@@ -103,8 +103,8 @@ public class ChatController {
             
             // 채팅방 기본 정보 설정
             chatRoom.setRoomId(UUID.randomUUID().toString());
-            chatRoom.setCreatedBy(member.getId());
-            chatRoom.setRoomAdmin(member.getId());  // 방장 설정
+            chatRoom.setCreatedBy(member.getMemberId());
+            chatRoom.setRoomAdmin(member.getMemberId());  // 방장 설정
             chatRoom.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
             chatRoom.setCurrentUsers(0);
             
@@ -205,14 +205,14 @@ public class ChatController {
         
         try {
             // 현재 사용자가 방장인지 확인
-            if (!chatMapper.isRoomAdmin(roomId, currentMember.getId())) {
+            if (!chatMapper.isRoomAdmin(roomId, currentMember.getMemberId())) {
                 response.put("success", false);
                 response.put("error", "방장 권한이 없습니다.");
                 return response;
             }
             
             // 권한 양도
-            chatMapper.transferRoomAdmin(roomId, currentMember.getId(), newAdminId);
+            chatMapper.transferRoomAdmin(roomId, currentMember.getMemberId(), newAdminId);
             response.put("success", true);
             
         } catch (Exception e) {
@@ -251,10 +251,10 @@ public class ChatController {
             log.info("Current member from session: {}", member);  // 추가된 로그
             
             if (member != null) {
-                log.info("Attempting to remove participant: memberId={}, roomId={}", member.getId(), roomId);
+                log.info("Attempting to remove participant: memberId={}, roomId={}", member.getMemberId(), roomId);
                 
                 // 참여자인지 먼저 확인
-                boolean isParticipant = chatMapper.isParticipant(roomId, member.getId());
+                boolean isParticipant = chatMapper.isParticipant(roomId, member.getMemberId());
                 if (!isParticipant) {
                     response.put("success", false);
                     response.put("error", "해당 채팅방의 참여자가 아닙니다.");
@@ -262,7 +262,7 @@ public class ChatController {
                 }
 
                 // 방장인 경우 체크
-                boolean isAdmin = chatMapper.isRoomAdmin(roomId, member.getId());
+                boolean isAdmin = chatMapper.isRoomAdmin(roomId, member.getMemberId());
                 if (isAdmin) {
                     response.put("success", false);
                     response.put("error", "방장은 방을 나갈 수 없습니다. 먼저 방장을 위임해주세요.");
@@ -270,7 +270,7 @@ public class ChatController {
                 }
                 
                 // 참여자 제거
-                chatMapper.removeParticipant(roomId, member.getId());
+                chatMapper.removeParticipant(roomId, member.getMemberId());
                 log.info("Successfully removed participant");
                 
                 // 현재 참여자 수를 가져와서 업데이트

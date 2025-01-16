@@ -1,157 +1,42 @@
-.footer {
+.footer-container {
     background-color: #fff;
-    padding: 40px 0;
-    border-top: 1px solid #e1e1e1;
 }
 
-.footer-content {
-    display: flex;
-    justify-content: space-between;
-    padding: 0 20px;
-}
-
-/* 고객센터 정보 스타일 */
-.contact-number {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 8px;
-    color: #323232;
-}
-
-.content {
-    color: #737373;
-    margin: 4px 0;
-    font-size: 14px;
-}
-
-/* 푸터 네비게이션 스타일 */
-.footer-nav {
-    display: flex;
-    gap: 60px;
-}
-
-.nav-title {
-    font-size: 16px;
+.footer-container h5 {
     font-weight: 700;
-    color: #323232;
-    margin-bottom: 16px;
 }
 
-.nav-column ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.footer-container h6 {
+    font-weight: 600;
+    font-size: 0.9rem;
 }
 
-.nav-column ul li {
-    margin-bottom: 12px;
-    position: relative;
+.footer-container .text-muted {
+    color: #6c757d !important;
 }
 
-.nav-column ul li a {
-    color: #737373;
-    text-decoration: none;
-    font-size: 14px;
-    transition: color 0.2s ease;
-    display: inline-block;
-}
-
-.nav-column ul li:hover {
-    background-color: transparent;
-}
-
-.nav-column ul li a:hover {
-    color: #215EA3;
-    font-weight: bold;
-}
-
-/* 회사 정보 스타일 */
-.footer-info {
-    margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px solid #e1e1e1;
-}
-
-.company-links {
-    margin-bottom: 20px;
-}
-
-.company-links a {
-    color: #737373;
-    text-decoration: none;
-    margin-right: 20px;
-    font-size: 14px;
+.footer-container a {
     transition: color 0.2s ease;
 }
 
-.company-links a:hover {
-    color: #215EA3;
-    font-weight: bold;
+.footer-container a:hover {
+    color: #0d6efd !important;
 }
 
-.company-info p {
-    color: #999;
-    font-size: 13px;
-    line-height: 1.6;
-    margin: 8px 0;
-}
-
-.copyright {
-    color: #999;
-    font-size: 13px;
-    margin: 20px 0;
-}
-
-.social-links {
-    display: flex;
-    gap: 15px;
-}
-
-.social-icon {
+.footer-container .social-links a {
     width: 32px;
     height: 32px;
-    background-color: #f2f2f2;
-    border-radius: 50%;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #666;
+    border-radius: 50%;
     transition: all 0.2s ease;
 }
 
-.social-icon:hover {
-    background-color: #215EA3;
-    color: #fff;
-    font-weight: bold;
+.footer-container .social-links a:hover {
+    background-color: #f8f9fa;
 }
 
-.social-icon i {
-    font-size: 18px;
-}
-
-/* 반응형 스타일 */
-@media (max-width: 768px) {
-    .footer-content {
-        flex-direction: column;
-        gap: 30px;
-    }
-
-    .footer-nav {
-        flex-wrap: wrap;
-        gap: 30px;
-    }
-
-    .nav-column {
-        flex: 0 0 calc(50% - 15px);
-    }
-}
-
-@media (max-width: 576px) {
-    .nav-column {
-        flex: 0 0 100%;
-    }
-}
-
-.footer-logo {
-    margin-bottom: 20px;
+.footer-container .bi-heart-fill {
+    font-size: 0.8rem;
 }

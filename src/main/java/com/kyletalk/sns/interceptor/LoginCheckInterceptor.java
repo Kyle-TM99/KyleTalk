@@ -1,4 +1,4 @@
-package com.kylemall.shop.interceptor;
+package com.kyletalk.sns.interceptor;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -26,7 +26,7 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
 			Object member = session.getAttribute("member");
 			
 			if (isLogin == null || !isLogin || member == null) {
-				log.warn("인증되지 않� 사용자 접근");
+				log.warn("인증되지 않은 사용자 접근");
 				session.invalidate(); // 세션 무효화
 				response.sendRedirect("/loginForm");
 				return false;

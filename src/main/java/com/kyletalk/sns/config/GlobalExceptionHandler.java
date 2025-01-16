@@ -1,4 +1,4 @@
-package com.kylemall.shop.configuration;
+package com.kyletalk.sns.config;
 
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;

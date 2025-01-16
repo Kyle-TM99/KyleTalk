@@ -1,4 +1,4 @@
-package com.kylemall.shop.configuration;
+package com.kyletalk.sns.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

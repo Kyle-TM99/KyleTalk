@@ -122,9 +122,9 @@
     
     <!-- 채팅방 참여자 목록 조회 -->
     <select id="getRoomParticipants" resultType="Member">
-        SELECT DISTINCT m.id, m.nickname, m.profile_image, m.social_type, p.joined_at
+        SELECT DISTINCT m.member_id, m.nickname, m.profile_image, m.social_type, p.joined_at
         FROM member m
-        INNER JOIN chat_room_participant p ON m.id = p.member_id
+        INNER JOIN chat_room_participant p ON m.member_id = p.member_id
         WHERE p.room_id = #{roomId}
         ORDER BY p.joined_at
     </select>

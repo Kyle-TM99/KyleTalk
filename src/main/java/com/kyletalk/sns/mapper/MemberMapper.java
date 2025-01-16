@@ -1,10 +1,10 @@
-package com.onestack.project.mapper;
+package com.kyletalk.sns.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.onestack.project.domain.Member;
-import com.onestack.project.domain.PasswordResetToken;
+import com.kyletalk.sns.domain.Member;
+import com.kyletalk.sns.domain.PasswordResetToken;
 
 @Mapper
 public interface MemberMapper {

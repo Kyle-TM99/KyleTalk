@@ -1,95 +1,74 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="header" class="header-container">
-	<nav class="navbar navbar-expand-lg">
-		<div class="container">
-			<!-- 로고 -->
-			<a class="navbar-brand" href="/mainList">
-				<img src="/images/kylemall3.png" alt="KyleMall" height="35" />
-			</a>
+	<!-- Navigation-->
+	<div th:fragment="header" class="header-container">
+		<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+			<div class="container">
+				<!-- 로고 -->
+				<a class="navbar-brand" href="/mainPage">
+					<span class="fw-bold text-primary">KyleTalk</span>
+				</a>
 
-			<!-- 모바일 토글 버튼 -->
-			<button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-				<span class="navbar-toggler-icon"></span>
-			</button>
-
-			<!-- 네비게이션 뉴 -->
-			<div class="collapse navbar-collapse" id="navbarContent">
-				<ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-					<li class="nav-item dropdown"><a class="nav-link" href="#" data-bs-toggle="dropdown"> 카테고리 <i class="bi bi-chevron-down"></i>
-					</a>
-						<ul class="dropdown-menu">
-							<li><a class="dropdown-item" href="/productList?category=1">아우터</a></li>
-							<li><a class="dropdown-item" href="/productList?category=2">상의</a></li>
-							<li><a class="dropdown-item" href="/productList?category=3">하의</a></li>
-						</ul>
-					</li>
-					<li class="nav-item dropdown">
-						<a class="nav-link" href="#" data-bs-toggle="dropdown">
-							고객지원 <i class="bi bi-chevron-down"></i>
+				<!-- 메인 메뉴 -->
+				<div class="d-flex align-items-center flex-grow-1 justify-content-between">
+					<!-- 왼쪽 메뉴 -->
+					<div class="d-flex">
+						<a href="/chat" class="nav-link px-3">
+							<i class="bi bi-chat-dots me-1"></i>채팅
 						</a>
-						<ul class="dropdown-menu">
-							<li><a class="dropdown-item" href="/faq">FAQ</a></li>
-						</ul>
-					</li>
-					<!-- 관리자 메뉴 -->
-					<th:block th:if="${session.member != null and session.member.isAdmin == true}">
-						<li class="nav-item">
-							<a href="/addProductForm" class="nav-link">상품 등록</a>
-						</li>
-						<li class="nav-item">
-							<a href="/productManagement" class="nav-link">상품 관리</a>
-						</li>
-					</th:block>
-				</ul>
-
-				<!-- 우측 메뉴 -->
-				<div class="d-flex align-items-center gap-3">
-					<!-- 회원일 경우 -->
-					<th:block th:if="${session.isLogin}">
-
-						<a class="nav-link" href="/chat"><i class="bi bi-chat-left-dots"></i></a>
-
-						<!-- 장바구니 -->
-						<a class="nav-link position-relative" href="/shoppingCart">
-							<i class="bi bi-bag"></i>
-							<span class="cart-badge" th:text="${cartCount}">0</span>
+						<a href="/friends" class="nav-link px-3">
+							<i class="bi bi-people me-1"></i>친구
 						</a>
+						<a href="/community" class="nav-link px-3">
+							<i class="bi bi-grid me-1"></i>커뮤니티
+						</a>
+					</div>
 
-						<!-- 프로필 드롭다운 -->
-						<div class="dropdown">
-							<a href="#" class="nav-link" data-bs-toggle="dropdown"> <i class="bi bi-person"></i>
-							</a>
-							<ul class="dropdown-menu dropdown-menu-end">
-								<li><a class="dropdown-item" href="/myPage">마이페이지</a></li>
-								<li>
-									<hr class="dropdown-divider">
-								</li>
-								<li><a class="dropdown-item" href="/memberUpdateForm">회원수정</a></li>
-								<th:block th:if="${session.member != null}">
-									<th:block th:if="${session.member.socialType == 'none'}">
-										<li><a class="dropdown-item" href="/logout">로그아웃</a></li>
-									</th:block>
-									<th:block th:if="${session.member.socialType == 'kakao'}">
-										<li><a class="dropdown-item" href="/oauth/kakao/logout">로그아웃</a></li>
-									</th:block>
-									<th:block th:if="${session.member.socialType == 'google'}">
-										<li><a class="dropdown-item" href="/google/logout">로그아웃</a></li>
-									</th:block>
-								</th:block>
-							</ul>
-						</div>
-					</th:block>
+					<!-- 오른쪽 메뉴 -->
+					<div class="d-flex align-items-center">
+						<th:block th:unless="${session.isLogin}">
+							<a href="/loginForm" class="btn btn-outline-primary me-2">로그인</a>
+							<a href="/joinForm" class="btn btn-primary">회원가입</a>
+						</th:block>
 
-					<!-- 비회원일 경우 -->
-					<th:block th:unless="${session.isLogin}">
-						<a class="nav-link" href="/loginForm">로그인</a>
-						<a class="btn btn-dark btn-sm rounded-pill px-3" href="/joinForm">회원가입</a>
-					</th:block>
+						<th:block th:if="${session.isLogin}">
+							<!-- 알림 아이콘 -->
+							<div class="position-relative me-3">
+								<a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#notificationModal">
+									<i class="bi bi-bell fs-5"></i>
+									<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+										2
+									</span>
+								</a>
+							</div>
+
+							<!-- 프로필 드롭다운 -->
+							<div class="dropdown">
+								<a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown">
+									<img th:src="${session.member.memberImage}" class="rounded-circle me-2" width="32" height="32">
+									<span class="d-none d-sm-inline" th:text="${session.member.nickname}">사용자</span>
+								</a>
+								<ul class="dropdown-menu dropdown-menu-end">
+									<li><a class="dropdown-item" href="/profile"><i class="bi bi-person me-2"></i>프로필</a></li>
+									<li><a class="dropdown-item" href="/settings"><i class="bi bi-gear me-2"></i>설정</a></li>
+									<li><hr class="dropdown-divider"></li>
+									<li>
+										<th:block th:if="${session.member.socialType == 'none'}">
+											<a class="dropdown-item text-danger" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>로그아웃</a>
+										</th:block>
+										<th:block th:if="${session.member.socialType == 'kakao'}">
+											<a class="dropdown-item text-danger" href="/oauth/kakao/logout"><i class="bi bi-box-arrow-right me-2"></i>로그아웃</a>
+										</th:block>
+										<th:block th:if="${session.member.socialType == 'google'}">
+											<a class="dropdown-item text-danger" href="/google/logout"><i class="bi bi-box-arrow-right me-2"></i>로그아웃</a>
+										</th:block>
+									</li>
+								</ul>
+							</div>
+						</th:block>
+					</div>
 				</div>
 			</div>
-		</div>
-	</nav>
-</div>
-
+		</nav>
+	</div>
 </html>

@@ -1,4 +1,4 @@
-package com.kylemall.shop.configuration;
+package com.kyletalk.sns.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

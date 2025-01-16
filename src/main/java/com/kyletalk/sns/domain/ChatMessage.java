@@ -1,4 +1,4 @@
-package com.kylemall.shop.domain;
+package com.kyletalk.sns.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

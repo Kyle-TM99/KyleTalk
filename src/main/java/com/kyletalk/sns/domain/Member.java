@@ -1,5 +1,6 @@
-package com.kylemall.shop.domain;
+package com.kyletalk.sns.domain;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;
@@ -7,26 +8,33 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Member {
-
-    private String id;                 // 고유 ID
-    private String name;               // 이름
-    private String pass;               // 비밀번호
-    private String email;              // 이메일
-    private String mobile;             // 휴대폰 번호
-    private String zipcode;            // 우편번호
-    private String address1;           // 주소 1
-    private String address2;           // 주소 2
-    private boolean emailGet;          // 이메일 수신 여부
-    private Timestamp regDate;     	   // 등록일
-    private String nickname;           // 닉네임
-    private boolean isAdmin;           // 관리자 여부
-    private boolean isSocial;          // 소셜 계정 여부
-    private String socialType;         // 소셜 로그인 유형 (none, kakao, google)
-    private String profileImage;       // 프로필 이미지 URL
-	
+    private Integer memberNo;
+    private String name;
+    private String memberId;
+    private String pass;
+    private String nickname;
+    private Date birth;
+    private String gender;
+    private String zipcode;
+    private String address;
+    private String address2;
+    private String email;
+    private boolean emailGet;
+    private String phone;
+    private Timestamp memberRegDate;
+    private Integer memberType;
+    private String memberImage;
+    private Timestamp withdrawalEndDate;
+    private Timestamp banEndDate;
+    private Integer reportedCount;
+    private boolean isSocial;
+    private String socialType;
+    private boolean isAdmin;
 }
