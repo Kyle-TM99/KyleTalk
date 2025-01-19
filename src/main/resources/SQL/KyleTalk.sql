@@ -2,6 +2,8 @@
 DROP DATABASE IF EXISTS kyletalk;
 CREATE DATABASE IF NOT EXISTS kyletalk;
 use kyletalk;
+
+
 ## Member - 회원
 CREATE TABLE Member (
    member_no INTEGER AUTO_INCREMENT PRIMARY KEY,
@@ -26,7 +28,7 @@ CREATE TABLE Member (
    ban_end_date   TIMESTAMP NULL,
    reported_count INTEGER DEFAULT 0 NOT NULL
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-SELECT * FROM Member;
+
 CREATE TABLE IF NOT EXISTS chat_room (
     room_id VARCHAR(50) PRIMARY KEY,
     room_name VARCHAR(100) NOT NULL,

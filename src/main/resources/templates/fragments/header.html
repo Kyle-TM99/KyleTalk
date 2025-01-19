@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 	<!-- Navigation-->
-	<div th:fragment="header" class="header-container">
+	<div th:fragment="header" id="kt-header">
 		<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
 			<div class="container">
 				<!-- 로고 -->
@@ -27,8 +27,10 @@
 					<!-- 오른쪽 메뉴 -->
 					<div class="d-flex align-items-center">
 						<th:block th:unless="${session.isLogin}">
-							<a href="/loginForm" class="btn btn-outline-primary me-2">로그인</a>
-							<a href="/joinForm" class="btn btn-primary">회원가입</a>
+							<div class="d-flex align-items-center gap-3">
+								<a href="/loginForm" class="nav-link btn-auth btn-login">로그인</a>
+								<a href="/joinForm" class="nav-link btn-auth btn-join">회원가입</a>
+							</div>
 						</th:block>
 
 						<th:block th:if="${session.isLogin}">

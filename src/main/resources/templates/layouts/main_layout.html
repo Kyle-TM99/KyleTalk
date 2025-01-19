@@ -17,7 +17,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR&family=Jua&display=swap" rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link th:href="@{/css/mainStyle.css}" rel="stylesheet">
     <link th:href="@{/css/header.css}" rel="stylesheet">
     <link th:href="@{/css/footer.css}" rel="stylesheet">
     
@@ -39,9 +38,7 @@
 </style>
 <body>
         <div th:replace="~{fragments/header::header}"></div>
-    <div class="container">
         <div layout:fragment="content"></div>
-    </div>
         <div th:replace="~{fragments/footer::footer}"></div>
 		<th:block layout:fragment="script"></th:block>
 </body>

@@ -3,7 +3,69 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main_layout}">
 <head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <style>
+        /* 모달 스타일 */
+        /* 부트스트랩 기본 모달 애니메이션 재정의 */
+        .modal.fade {
+            background-color: rgba(0, 0, 0, 0);
+            transition: background-color 0.2s linear;
+        }
+
+        .modal.fade.show {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.fade .modal-dialog {
+            transform: translate(0, 0) !important;
+            opacity: 0;
+            transition: opacity 0.2s linear !important;
+            margin: 1.75rem auto !important;
+        }
+
+        .modal.fade.show .modal-dialog {
+            transform: translate(0, 0) !important;
+            opacity: 1;
+        }
+
+        .modal.show {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-dialog {
+            max-width: 600px !important;
+            position: relative;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            width: 100% !important;
+            border: none !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+        }
+
+        .modal-header {
+            padding: 1.5rem !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            background-color: #f8fafc !important;
+            border-radius: 12px 12px 0 0 !important;
+        }
+
+        .modal-body {
+            padding: 2rem !important;
+        }
+
+        .modal-footer {
+            padding: 1.5rem !important;
+            border-top: 1px solid #e5e7eb !important;
+            background-color: #f8fafc !important;
+            border-radius: 0 0 12px 12px !important;
+        }
+
         .chat-room-card {
             transition: transform 0.2s;
             border-radius: 15px;
@@ -36,6 +98,51 @@
             font-size: 0.9rem;
             color: #6c757d;
         }
+
+        /* 입력 폼 스타일 */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        /* 버튼 스타일 */
+        .modal-footer .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: #374151;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
     </style>
 </head>
 <th:block layout:fragment="content">
@@ -48,9 +155,17 @@
         </div>
         
         <div class="row">
-            <!-- 채팅방 카드 -->
-            <div class="col-md-6 col-lg-4" th:each="room : ${chatRooms}">
-                <div class="card chat-room-card">
+            <th:block th:if="${chatRooms.size() == 0}">
+                <div class="col-12">   
+                    <div class="alert alert-info">
+                        현재 활성화된 채팅방이 존재하지 않습니다.
+                    </div>
+                </div>
+            </th:block>
+            <th:block th:if="${chatRooms.size() > 0}">
+                <!-- 채팅방 카드 -->
+                <div class="col-md-6 col-lg-4" th:each="room : ${chatRooms}">
+                    <div class="card chat-room-card">
                     <div class="card-body position-relative">
                         <span th:if="${room.private}" class="private-badge badge bg-warning">
                             <i class="bi bi-lock-fill"></i> 비공개
@@ -79,9 +194,11 @@
                                 참여하기
                             </a>
                         </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </th:block>
+
         </div>
         
         <!-- 채팅방 생성 버튼 -->
@@ -156,6 +273,17 @@
     </div>
     
     <script th:inline="javascript">
+        // CSRF 토큰 설정
+        const token = document.querySelector("meta[name='_csrf']").content;
+        const header = document.querySelector("meta[name='_csrf_header']").content;
+
+        // Ajax 요청 전에 CSRF 헤더 설정
+        $.ajaxSetup({
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader(header, token);
+            }
+        });
+
         $(document).ready(function() {
             // 비공개방 체크박스 이벤트
             $('#isPrivate').change(function() {
@@ -164,34 +292,29 @@
         });
 
         function createRoom() {
-            const form = $('#createRoomForm');
-            const formData = new FormData(form[0]);
-            
-            const roomData = {
-                roomName: formData.get('roomName'),
-                maxUsers: parseInt(formData.get('maxUsers')),
-                roomPassword: formData.get('isPrivate') === 'on' ? formData.get('roomPassword') : null
+            const form = document.getElementById('createRoomForm');
+            const formData = {
+                roomName: form.roomName.value,
+                maxUsers: form.maxUsers.value,
+                private: form.isPrivate.checked,
+                roomPassword: form.isPrivate.checked ? form.roomPassword.value : null
             };
 
             $.ajax({
                 url: '/api/chat/rooms',
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify(roomData),
+                data: JSON.stringify(formData),
                 success: function(response) {
-                    if(response.success && response.roomId) {
-                        // 모달 닫기
-                        $('#createRoomModal').modal('hide');
-                        
-                        // 성공 시 채팅방으로 리다이렉션
+                    if (response.success) {
                         window.location.href = '/chat/' + response.roomId;
                     } else {
-                        alert('채팅방 생성에 실패했습니다: ' + (response.error || '알 수 없는 오류'));
+                        alert(response.error || '채팅방 생성에 실패했습니다.');
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error('Error:', error);
-                    alert('채팅방 생성 중 오류가 발생했습니다.');
+                    alert('채팅방 생성에 실패했습니다.');
                 }
             });
         }

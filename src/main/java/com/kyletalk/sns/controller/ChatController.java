@@ -3,7 +3,8 @@ package com.kyletalk.sns.controller;
 import com.kyletalk.sns.domain.ChatMessage;
 import com.kyletalk.sns.domain.ChatRoom;
 import com.kyletalk.sns.domain.Member;
-import com.kyletalk.sns.mapper.ChatMapper;
+import com.kyletalk.sns.service.ChatService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -20,10 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.HashMap;
 import jakarta.servlet.http.HttpSession;
-import java.time.LocalDateTime;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 
@@ -32,15 +31,27 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 public class ChatController {
 
     @Autowired
-    private ChatMapper chatMapper;
+    private ChatService chatService;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    @GetMapping("/chat/delete/{roomId}")
-    public String deleteChatRoom(@PathVariable("roomId") String roomId) {
-        chatMapper.deleteChatRoom(roomId);
-        return "redirect:/chat";
+    // 채팅방 삭제
+    @PostMapping("/chat/delete/{roomId}")
+    @ResponseBody
+    public Map<String, Object> deleteChatRoom(@PathVariable("roomId") String roomId) {
+        try {
+            chatService.deleteChatRoom(roomId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "채팅방이 삭제되었습니다.");
+            return response;
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return response;
+        }
     }
 
     // 채팅방 목록 페이지
@@ -50,7 +61,7 @@ public class ChatController {
             return "redirect:/loginForm";
         }
         
-        List<ChatRoom> chatRooms = chatMapper.getAllChatRooms();
+        List<ChatRoom> chatRooms = chatService.getAllChatRooms();
         model.addAttribute("chatRooms", chatRooms);
         return "views/chatRooms";
     }
@@ -62,69 +73,35 @@ public class ChatController {
             return "redirect:/loginForm";
         }
         
-        ChatRoom room = chatMapper.getChatRoomById(roomId);
-        if(room == null) {
+        try {
+            ChatRoom room = chatService.findRoom(roomId);
+            model.addAttribute("room", room);
+            return "views/chat";
+        } catch (Exception e) {
+            log.error("채팅방 입장 실패: {}", e.getMessage());
             return "redirect:/chat";
         }
-        
-        Member member = (Member) session.getAttribute("member");
-        
-        // 이미 참여 중인지 확인
-        if(!chatMapper.isParticipant(roomId, member.getMemberId())) {
-            chatMapper.addParticipant(roomId, member.getMemberId());
-            // 현재 참여자 수를 가져와서 1 증가
-            int currentCount = chatMapper.getParticipantCount(roomId);
-            chatMapper.updateParticipantCount(roomId, currentCount);
-        }
-        
-        // 현재 참여자 수를 모델에 추가
-        int participantCount = chatMapper.getParticipantCount(roomId);
-        model.addAttribute("participantCount", participantCount);
-        
-        List<ChatMessage> recentMessages = chatMapper.getRecentMessages(roomId, 50);
-        model.addAttribute("room", room);
-        model.addAttribute("recentMessages", recentMessages);
-        return "views/chat";
     }
     
     // 채팅방 생성 API
     @PostMapping("/api/chat/rooms")
     @ResponseBody
-    public Map<String, Object> createRoom(@RequestBody ChatRoom chatRoom, HttpSession session) {
+    public Map<String, Object> createRoom(@RequestBody ChatRoom room, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
         
         try {
             Member member = (Member) session.getAttribute("member");
             if (member == null) {
-                response.put("success", false);
-                response.put("error", "로그인이 필요합니다.");
-                return response;
+                throw new RuntimeException("로그인이 필요합니다.");
             }
             
-            // 채팅방 기본 정보 설정
-            chatRoom.setRoomId(UUID.randomUUID().toString());
-            chatRoom.setCreatedBy(member.getMemberId());
-            chatRoom.setRoomAdmin(member.getMemberId());  // 방장 설정
-            chatRoom.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
-            chatRoom.setCurrentUsers(0);
-            
-            // 최대 인원수가 설정되지 않은 경우 기본값 설정
-            if (chatRoom.getMaxUsers() <= 0) {
-                chatRoom.setMaxUsers(100);
-            }
-            
-            log.info("Creating chat room: {}", chatRoom);  // 로그 추가
-            
-            // 채팅방 생성
-            chatMapper.createChatRoom(chatRoom);
+            String roomId = chatService.createRoom(room, member);
             
             response.put("success", true);
-            response.put("roomId", chatRoom.getRoomId());
-            
+            response.put("roomId", roomId);
         } catch (Exception e) {
-            log.error("채팅방 생성 실패: ", e);
             response.put("success", false);
-            response.put("error", "채팅방 생성에 실패했습니다: " + e.getMessage());
+            response.put("error", e.getMessage());
         }
         
         return response;
@@ -133,67 +110,91 @@ public class ChatController {
     // 비밀번호 확인 API
     @PostMapping("/api/chat/rooms/{roomId}/verify")
     @ResponseBody
-    public Map<String, Object> verifyPassword(@PathVariable("roomId") String roomId, 
-                                            @RequestBody Map<String, String> request) {
-        String password = request.get("password");
-        String storedPassword = chatMapper.getRoomPassword(roomId);
-        
+    public Map<String, Object> verifyRoomPassword(
+            @PathVariable("roomId") String roomId,
+            @RequestBody Map<String, String> request,
+            HttpSession session) {
         Map<String, Object> response = new HashMap<>();
-        response.put("success", password != null && password.equals(storedPassword));
+        
+        try {
+            Member member = (Member) session.getAttribute("member");
+            if (member == null) {
+                throw new RuntimeException("로그인이 필요합니다.");
+            }
+
+            chatService.verifyAndJoinRoom(roomId, request.get("password"), member);
+            
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        }
+        
         return response;
     }
     
     // WebSocket 메시지 처리
-    @MessageMapping("/chat/room/{roomId}/sendMessage")
-    public void sendMessage(@Payload ChatMessage chatMessage, 
-                           @DestinationVariable("roomId") String roomId) {
+    @MessageMapping("/chat/{roomId}/sendMessage")
+    @SendTo("/topic/chat/{roomId}")
+    public ChatMessage sendMessage(@DestinationVariable("roomId") String roomId, @Payload ChatMessage message) {
+        message.setType("CHAT");
+        message.setSentAt(new Timestamp(System.currentTimeMillis()));
+        chatService.insertMessage(message);
+        return message;
+    }
+
+    // 채팅방 참여
+    @MessageMapping("/chat/{roomId}/join")
+    @SendTo("/topic/chat/{roomId}")
+    public ChatMessage joinRoom(@DestinationVariable("roomId") String roomId, @Payload ChatMessage message) {
         try {
-            // 채팅방이 존재하는지 먼저 확인
-            ChatRoom room = chatMapper.getChatRoomById(roomId);
-            if (room != null) {
-                chatMessage.setRoomId(roomId);
-                chatMessage.setSentAt(new Timestamp(System.currentTimeMillis()));
-                chatMapper.insertMessage(chatMessage);
+            if (!chatService.isParticipant(roomId, message.getSender())) {
+                message.setType("JOIN");
+                message.setSentAt(new Timestamp(System.currentTimeMillis()));
+                chatService.addParticipant(roomId, message.getSender());
                 
-                // 특정 채팅방으로만 메시지 전송
-                messagingTemplate.convertAndSend("/topic/room/" + roomId, chatMessage);
-            } else {
-                log.error("Chat room not found: {}", roomId);
+                // 참여자 수 업데이트
+                ChatRoom room = chatService.findRoom(roomId);
+                messagingTemplate.convertAndSend("/topic/chat/" + roomId + "/room-info", room);
             }
+            
+            List<Member> participants = chatService.getRoomParticipants(roomId);
+            messagingTemplate.convertAndSend("/topic/chat/" + roomId + "/participants", participants);
+            
+            return message;
         } catch (Exception e) {
-            log.error("Error in sendMessage: ", e);
+            log.error("Error in joinRoom: ", e);
+            throw new RuntimeException("채팅방 참여 중 오류가 발생했습니다.");
         }
     }
 
+    // 채팅방 참여자 추가
     @MessageMapping("/chat/room/{roomId}/addUser")
     public void addUser(@Payload ChatMessage chatMessage,
                        SimpMessageHeaderAccessor headerAccessor,
                        @DestinationVariable("roomId") String roomId) {
         try {
-            // 채팅방이 존재하는지 먼저 확인
-            ChatRoom room = chatMapper.getChatRoomById(roomId);
-            if (room != null) {
-                chatMessage.setRoomId(roomId);
-                
-                Member member = (Member) headerAccessor.getSessionAttributes().get("member");
-                if (member != null) {
-                    chatMessage.setNickname(member.getNickname());
-                }
-                
-                headerAccessor.getSessionAttributes().put("username", chatMessage.getSender());
-                chatMessage.setSentAt(new Timestamp(System.currentTimeMillis()));
-                chatMapper.insertMessage(chatMessage);
-                
-                // 특정 채팅방으로만 입장 메시지 전송
-                messagingTemplate.convertAndSend("/topic/room/" + roomId, chatMessage);
-            } else {
-                log.error("Chat room not found: {}", roomId);
+            ChatRoom room = chatService.findRoom(roomId);
+            chatMessage.setRoomId(roomId);
+            
+            Member member = (Member) headerAccessor.getSessionAttributes().get("member");
+            if (member != null) {
+                chatMessage.setNickname(member.getNickname());
+                chatMessage.setProfileImage(member.getMemberImage());
             }
+            
+            headerAccessor.getSessionAttributes().put("username", chatMessage.getSender());
+            chatMessage.setSentAt(new Timestamp(System.currentTimeMillis()));
+            chatService.insertMessage(chatMessage);
+            
+            messagingTemplate.convertAndSend("/topic/room/" + roomId, chatMessage);
         } catch (Exception e) {
             log.error("Error in addUser: ", e);
+            throw new RuntimeException("사용자 추가 중 오류가 발생했습니다.");
         }
     }
 
+    // 채팅방 권한 양도
     @PostMapping("/api/chat/rooms/{roomId}/transfer-admin")
     @ResponseBody
     public Map<String, Object> transferAdmin(@PathVariable("roomId") String roomId,
@@ -205,14 +206,14 @@ public class ChatController {
         
         try {
             // 현재 사용자가 방장인지 확인
-            if (!chatMapper.isRoomAdmin(roomId, currentMember.getMemberId())) {
+            if (!chatService.isRoomAdmin(roomId, currentMember.getMemberId())) {
                 response.put("success", false);
                 response.put("error", "방장 권한이 없습니다.");
                 return response;
             }
             
             // 권한 양도
-            chatMapper.transferRoomAdmin(roomId, currentMember.getMemberId(), newAdminId);
+            chatService.transferRoomAdmin(roomId, currentMember.getMemberId(), newAdminId);
             response.put("success", true);
             
         } catch (Exception e) {
@@ -229,7 +230,7 @@ public class ChatController {
     public Map<String, Object> getRoomParticipants(@PathVariable("roomId") String roomId) {
         Map<String, Object> response = new HashMap<>();
         try {
-            List<Member> participants = chatMapper.getRoomParticipants(roomId);
+            List<Member> participants = chatService.getRoomParticipants(roomId);
             response.put("success", true);
             response.put("participants", participants);
             response.put("count", participants.size());
@@ -240,65 +241,43 @@ public class ChatController {
         return response;
     }
 
+    // 채팅방 나가기
     @PostMapping("/api/chat/rooms/{roomId}/leave")
     @ResponseBody
     public Map<String, Object> leaveRoom(@PathVariable("roomId") String roomId, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
-        log.info("Received leave request for room: {}", roomId);  // 추가된 로그
         
         try {
             Member member = (Member) session.getAttribute("member");
-            log.info("Current member from session: {}", member);  // 추가된 로그
-            
-            if (member != null) {
-                log.info("Attempting to remove participant: memberId={}, roomId={}", member.getMemberId(), roomId);
-                
-                // 참여자인지 먼저 확인
-                boolean isParticipant = chatMapper.isParticipant(roomId, member.getMemberId());
-                if (!isParticipant) {
-                    response.put("success", false);
-                    response.put("error", "해당 채팅방의 참여자가 아닙니다.");
-                    return response;
-                }
-
-                // 방장인 경우 체크
-                boolean isAdmin = chatMapper.isRoomAdmin(roomId, member.getMemberId());
-                if (isAdmin) {
-                    response.put("success", false);
-                    response.put("error", "방장은 방을 나갈 수 없습니다. 먼저 방장을 위임해주세요.");
-                    return response;
-                }
-                
-                // 참여자 제거
-                chatMapper.removeParticipant(roomId, member.getMemberId());
-                log.info("Successfully removed participant");
-                
-                // 현재 참여자 수를 가져와서 업데이트
-                int currentCount = chatMapper.getParticipantCount(roomId);
-                
-                // 마지막 참여자였다면 채팅방 삭제
-                if (currentCount == 0) {
-                    chatMapper.deleteChatRoom(roomId);
-                    log.info("Chat room deleted as it was empty: {}", roomId);
-                } else {
-                    chatMapper.updateParticipantCount(roomId, currentCount);
-                    log.info("Updated participant count to: {}", currentCount);
-                }
-                
-                response.put("success", true);
-                response.put("message", "성공적으로 채팅방을 나갔습니다.");
-            } else {
-                log.error("Member not found in session");
-                response.put("success", false);
-                response.put("error", "로그인이 필요합니다.");
+            if (member == null) {
+                throw new RuntimeException("로그인이 필요합니다.");
             }
+
+            chatService.leaveRoom(roomId, member);
+            
+            // 퇴장 메시지 전송
+            ChatMessage leaveMessage = new ChatMessage();
+            leaveMessage.setType("LEAVE");
+            leaveMessage.setSender(member.getMemberId());
+            leaveMessage.setNickname(member.getNickname());
+            leaveMessage.setRoomId(roomId);
+            messagingTemplate.convertAndSend("/topic/chat/" + roomId, leaveMessage);
+            
+            response.put("success", true);
+            response.put("message", "성공적으로 채팅방을 나갔습니다.");
         } catch (Exception e) {
             log.error("Error while leaving chat room: ", e);
             response.put("success", false);
-            response.put("error", "채팅방을 나가는 중 오류가 발생했습니다: " + e.getMessage());
+            response.put("error", e.getMessage());
         }
         
-        log.info("Leave room response: {}", response);  // 추가된 로그
         return response;
+    }
+
+    // 참여자 목록 조회 API
+    @MessageMapping("/chat/{roomId}/participants")
+    @SendTo("/topic/chat/{roomId}/participants")
+    public List<Member> getParticipants(@DestinationVariable("roomId") String roomId) {
+        return chatService.getRoomParticipants(roomId);
     }
 } 

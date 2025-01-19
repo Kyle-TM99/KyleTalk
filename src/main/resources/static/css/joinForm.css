@@ -126,3 +126,51 @@ background-color: #f9f9f9;
             font-size: 0.8rem;
             margin-top: 0.25rem;
         }
+
+.auth-container {
+    min-height: 90vh;
+    background: #f9f9f9;
+}
+
+.card {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 3rem;
+}
+
+.form-control {
+    border: 2px solid #e1e1e1;
+    border-radius: 10px;
+    padding: 1rem;
+    height: auto;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.custom-button2 {
+    background: #4A90E2;
+    border: none;
+    border-radius: 10px;
+    padding: 0.8rem;
+    color: white;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.custom-button2:hover {
+    transform: translateY(-2px);
+    background: #357ABD;
+    color: white;
+}
+
+.fw-bold {
+    color: #333;
+}
+
+.text-muted {
+    color: #666 !important;
+}
