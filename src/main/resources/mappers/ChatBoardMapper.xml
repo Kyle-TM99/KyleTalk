@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kyletalk.sns.mapper.ChatBoardMapper">
+    <insert id="insertBoard" parameterType="ChatBoardEvent">
+        INSERT INTO chat_board_event (
+            room_id, member_id, board_title, board_content
+        ) VALUES (
+            #{roomId}, #{memberId}, #{boardTitle}, #{boardContent}
+        )
+    </insert>
+    
+    <select id="getBoardList" resultType="ChatBoardEvent">
+        SELECT b.*, m.nickname as writerNickname, m.member_image as writerImage
+        FROM chat_board_event b
+        JOIN member m ON b.member_id = m.member_id
+        WHERE b.room_id = #{roomId}
+        ORDER BY b.joined_at DESC
+    </select>
+    
+    <select id="getBoard" resultType="ChatBoardEvent">
+        SELECT b.*, m.nickname as writerNickname, m.member_image as writerImage
+        FROM chat_board_event b
+        JOIN member m ON b.member_id = m.member_id
+        WHERE b.board_id = #{boardId}
+    </select>
+    
+    <update id="updateBoard" parameterType="ChatBoardEvent">
+        UPDATE chat_board_event
+        SET board_title = #{boardTitle},
+            board_content = #{boardContent}
+        WHERE board_id = #{boardId}
+    </update>
+    
+    <delete id="deleteBoard">
+        DELETE FROM chat_board_event
+        WHERE board_id = #{boardId}
+    </delete>
+</mapper> 

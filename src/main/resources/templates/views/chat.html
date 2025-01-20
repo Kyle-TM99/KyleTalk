@@ -8,8 +8,7 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <!-- FullCalendar 한글 지원 -->
     <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/ko.global.min.js'></script>
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>채팅방</title>
 </head>
 <th:block layout:fragment="content">
     <div th:if="${session.member}" 
@@ -79,29 +78,39 @@
             <div class="side-section">
                 <ul class="nav nav-tabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#boardTab" type="button">
-                            <i class="bi bi-clipboard"></i> 게시판
-                        </button>
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#boardTab" type="button">게시판</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#calendarTab" type="button">
-                            <i class="bi bi-calendar3"></i> 일정
-                        </button>
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#calendarTab" type="button">일정</button>
                     </li>
                 </ul>
                 
                 <div class="tab-content">
+                    
                     <!-- 게시판 탭 -->
                     <div class="tab-pane fade show active" id="boardTab">
                         <div class="board-container">
-                            <div class="board-header">
-                                <h5>게시판</h5>
-                                <button class="btn btn-primary" onclick="createPost()">
-                                    <i class="bi bi-plus"></i> 글쓰기
+                            <div class="board-header d-flex justify-content-between align-items-center p-3">
+                                <h5 class="mb-0">게시판</h5>
+                                <button class="btn btn-primary" onclick="openBoardModal()">
+                                    <i class="bi bi-plus-lg"></i> 글쓰기
                                 </button>
                             </div>
-                            <div class="board-list" id="postList">
-                                <!-- 게시글 목록이 동적으로 추가됨 -->
+                            <div class="board-list p-3">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>제목</th>
+                                                <th>작성자</th>
+                                                <th>작성일</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="boardList">
+                                            <!-- 게시글 목록이 여기에 동적으로 추가됨 -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -174,21 +183,61 @@
             </div>
         </div>
 
+        <!-- 게시글 작성 모달 -->
+        <div class="modal fade" id="boardModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">게시글 작성</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="boardForm">
+                            <div class="mb-3">
+                                <label for="boardTitle" class="form-label">제목</label>
+                                <input type="text" class="form-control" id="boardTitle" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="boardContent" class="form-label">내용</label>
+                                <textarea class="form-control" id="boardContent" rows="5" required></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" onclick="submitBoard()">등록</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 채팅방 정보를 hidden input으로 저장 -->
         <input type="hidden" id="roomId" th:value="${room.roomId}">
-        <input type="hidden" id="_csrf" th:value="${_csrf.token}">
-        <input type="hidden" id="_csrf_header" th:value="${_csrf.headerName}">
     </div>
 </th:block>
 
 <th:block layout:fragment="script">
     <!-- 필수 라이브러리 -->
-    <script src="/js/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- 소켓 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     
     <script th:inline="javascript">
+        // DOM이 로드된 후 이벤트 핸들러 등록
+        $(document).ready(function() {
+            // 소켓 연결
+            connect();
+            
+            // 메시지 전송 폼 이벤트 핸들러 등록
+            $('#messageForm').on('submit', function(e) {
+                sendMessage(e);
+            });
+            
+            // 초기 참여자 목록 로드
+            loadParticipants();
+        });
+
         // 소켓 관련 변수
         let stompClient = null;
         
@@ -205,16 +254,6 @@
         console.log('Room Admin ID:', roomAdmin);
         console.log('Is Admin?:', username === roomAdmin);
         
-        // CSRF 토큰 설정
-        const token = document.getElementById('_csrf').value;
-        const header = document.getElementById('_csrf_header').value;
-        
-        $.ajaxSetup({
-            beforeSend: function(xhr) {
-                xhr.setRequestHeader(header, token);
-            }
-        });
-        
         // 소켓 연결 함수
         function connect() {
             // 소켓 연결
@@ -227,18 +266,20 @@
                 
                 // 채팅 메시지 구독
                 stompClient.subscribe('/topic/chat/' + roomId, function(message) {
+                    console.log('Received message:', message);
                     showMessage(JSON.parse(message.body));
                 });
                 
                 // 참여자 목록 구독
                 stompClient.subscribe('/topic/chat/' + roomId + '/participants', function(message) {
+                    console.log('Received participants:', message);
                     updateParticipantsList(JSON.parse(message.body));
                 });
                 
                 sendJoinMessage();
-
-                // 초기 참여자 목록 요청
-                stompClient.send("/app/chat/" + roomId + "/participants", {}, {});
+            }, 
+            function(error) {
+                console.error('STOMP error:', error);
             });
         }
         
@@ -322,28 +363,23 @@
         
         // 참여자 목록 업데이트 함수
         function updateParticipantsList(participants) {
-            const participantsList = document.getElementById('participantsList');
-            const participantCount = document.getElementById('participantCount');
+            const participantsList = $('#participantsList');
+            participantsList.empty();
             
-            participantsList.innerHTML = '';
-            participantCount.textContent = participants.length;
+            $('#participantCount').text(participants.length);
             
-            participants.forEach(participant => {
-                const participantElement = document.createElement('div');
-                participantElement.className = 'participant-item dropdown-item d-flex align-items-center justify-content-between';
-                participantElement.dataset.memberId = participant.memberId;
+            participants.forEach(function(participant) {
+                const isAdmin = participant.memberId === roomAdmin;
+                const adminBadge = isAdmin ? '<span class="badge bg-primary ms-1">방장</span>' : '';
                 
-                participantElement.innerHTML = `
-                    <div class="d-flex align-items-center">
+                participantsList.append(`
+                    <div class="dropdown-item d-flex align-items-center">
                         <img src="${participant.memberImage || '/images/default-profile.png'}" 
-                             alt="프로필" class="participant-avatar">
-                        <span class="participant-name ms-2">${participant.nickname}</span>
+                             class="rounded-circle me-2" 
+                             style="width: 30px; height: 30px;">
+                        <span>${participant.nickname}${adminBadge}</span>
                     </div>
-                    ${participant.memberId === roomAdmin ? 
-                        '<span class="admin-badge"><i class="bi bi-star-fill text-warning"></i> 방장</span>' : ''}
-                `;
-                
-                participantsList.appendChild(participantElement);
+                `);
             });
         }
         
@@ -503,6 +539,12 @@
                 });
             };
         });
+
+        function loadParticipants() {
+            $.get('/api/chat/rooms/' + roomId + '/participants', function(participants) {
+                updateParticipantsList(participants);
+            });
+        }
     </script>
 </th:block>
 </html> 

@@ -136,7 +136,7 @@ public class ChatController {
     // WebSocket 메시지 처리
     @MessageMapping("/chat/{roomId}/sendMessage")
     @SendTo("/topic/chat/{roomId}")
-    public ChatMessage sendMessage(@DestinationVariable("roomId") String roomId, @Payload ChatMessage message) {
+    public ChatMessage sendMessage(@DestinationVariable("roomId") String roomId, ChatMessage message) {
         message.setType("CHAT");
         message.setSentAt(new Timestamp(System.currentTimeMillis()));
         chatService.insertMessage(message);
@@ -146,24 +146,21 @@ public class ChatController {
     // 채팅방 참여
     @MessageMapping("/chat/{roomId}/join")
     @SendTo("/topic/chat/{roomId}")
-    public ChatMessage joinRoom(@DestinationVariable("roomId") String roomId, @Payload ChatMessage message) {
+    public ChatMessage join(@DestinationVariable("roomId") String roomId, ChatMessage message) {
         try {
+            // 참여자 추가
             if (!chatService.isParticipant(roomId, message.getSender())) {
-                message.setType("JOIN");
-                message.setSentAt(new Timestamp(System.currentTimeMillis()));
                 chatService.addParticipant(roomId, message.getSender());
-                
-                // 참여자 수 업데이트
-                ChatRoom room = chatService.findRoom(roomId);
-                messagingTemplate.convertAndSend("/topic/chat/" + roomId + "/room-info", room);
             }
             
+            // 참여자 목록 업데이트
             List<Member> participants = chatService.getRoomParticipants(roomId);
             messagingTemplate.convertAndSend("/topic/chat/" + roomId + "/participants", participants);
             
+            message.setMessage(message.getNickname() + "님이 입장하셨습니다.");
             return message;
         } catch (Exception e) {
-            log.error("Error in joinRoom: ", e);
+            log.error("Error in join: ", e);
             throw new RuntimeException("채팅방 참여 중 오류가 발생했습니다.");
         }
     }
@@ -227,18 +224,8 @@ public class ChatController {
     // 채팅방 참여자 목록 조회 API
     @GetMapping("/api/chat/rooms/{roomId}/participants")
     @ResponseBody
-    public Map<String, Object> getRoomParticipants(@PathVariable("roomId") String roomId) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            List<Member> participants = chatService.getRoomParticipants(roomId);
-            response.put("success", true);
-            response.put("participants", participants);
-            response.put("count", participants.size());
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", "참여자 목록을 불러오는데 실패했습니다.");
-        }
-        return response;
+    public List<Member> getParticipants(@PathVariable("roomId") String roomId) {
+        return chatService.getRoomParticipants(roomId);
     }
 
     // 채팅방 나가기
@@ -272,12 +259,5 @@ public class ChatController {
         }
         
         return response;
-    }
-
-    // 참여자 목록 조회 API
-    @MessageMapping("/chat/{roomId}/participants")
-    @SendTo("/topic/chat/{roomId}/participants")
-    public List<Member> getParticipants(@DestinationVariable("roomId") String roomId) {
-        return chatService.getRoomParticipants(roomId);
     }
 } 

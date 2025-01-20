@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kyletalk.sns.mapper.ChatCalendarMapper">
+    <insert id="insertEvent" parameterType="ChatCalendarEvent">
+        INSERT INTO chat_calendar_event (
+            room_id, created_by, title, description,
+            start_date, end_date, all_day
+        ) VALUES (
+            #{roomId}, #{createdBy}, #{title}, #{description},
+            #{startDate}, #{endDate}, #{allDay}
+        )
+    </insert>
+    
+    <select id="getEventList" resultType="ChatCalendarEvent">
+        SELECT e.*, m.nickname as creatorNickname, m.member_image as creatorImage
+        FROM chat_calendar_event e
+        JOIN member m ON e.created_by = m.member_id
+        WHERE e.room_id = #{roomId}
+        ORDER BY e.start_date ASC
+    </select>
+    
+    <select id="getEvent" resultType="ChatCalendarEvent">
+        SELECT e.*, m.nickname as creatorNickname, m.member_image as creatorImage
+        FROM chat_calendar_event e
+        JOIN member m ON e.created_by = m.member_id
+        WHERE e.event_id = #{eventId}
+    </select>
+    
+    <update id="updateEvent" parameterType="ChatCalendarEvent">
+        UPDATE chat_calendar_event
+        SET title = #{title},
+            description = #{description},
+            start_date = #{startDate},
+            end_date = #{endDate},
+            all_day = #{allDay}
+        WHERE event_id = #{eventId}
+    </update>
+    
+    <delete id="deleteEvent">
+        DELETE FROM chat_calendar_event
+        WHERE event_id = #{eventId}
+    </delete>
+</mapper> 

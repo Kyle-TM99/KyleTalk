@@ -27,10 +27,8 @@ public class SecurityConfig {
 	@Bean  // 스프링 컨테이너에 이 메서드가 반환하는 객체를 빈으로 등록
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
-			// CSRF 보호 기능을 비활성화 (REST API 서버의 경우 일반적으로 비활성화)
-			.csrf(csrf -> csrf
-				.ignoringRequestMatchers("/ws/**", "/chat/**")  // WebSocket과 채팅 관련 엔드포인트는 CSRF 검사 제외
-			)
+			// CSRF 보호 기능을 완전히 비활성화
+			.csrf(csrf -> csrf.disable())
 			
 			// HTTP 요청에 대한 접근 권한 설정
 			.authorizeHttpRequests(auth -> auth
