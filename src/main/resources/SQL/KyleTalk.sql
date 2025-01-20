@@ -63,3 +63,30 @@ CREATE TABLE IF NOT EXISTS chat_room_participant (
     CONSTRAINT fk_participant_room FOREIGN KEY (room_id) REFERENCES chat_room(room_id),
     CONSTRAINT fk_participant_member FOREIGN KEY (member_id) REFERENCES member(member_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 채팅방 게시판 테이블 추가
+CREATE TABLE IF NOT EXISTS chat_board_event (
+	room_id VARCHAR(50),
+    member_id VARCHAR(50),
+    board_title VARCHAR(50) NOT NULL,
+	board_content VARCHAR(10000) NOT NULL,
+	joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_chat_board_room FOREIGN KEY (room_id) REFERENCES chat_room(room_id),
+    CONSTRAINT fk_chat_board_member FOREIGN KEY (member_id) REFERENCES member(member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 채팅방 일정 테이블 추가
+CREATE TABLE IF NOT EXISTS chat_calendar_event (
+    event_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    room_id VARCHAR(50) NOT NULL,
+    created_by VARCHAR(50) NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    description TEXT,
+    start_date DATETIME NOT NULL,
+    end_date DATETIME NOT NULL,
+    all_day BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_calendar_room FOREIGN KEY (room_id) REFERENCES chat_room(room_id) ON DELETE CASCADE,
+    CONSTRAINT fk_calendar_creator FOREIGN KEY (created_by) REFERENCES member(member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

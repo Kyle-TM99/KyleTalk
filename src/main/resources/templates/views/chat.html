@@ -138,53 +138,13 @@
             </div>
         </div>
 
-        <!-- 채팅방 생성 모달 -->
-        <div class="modal fade" id="createRoomModal" tabindex="-1" aria-labelledby="createRoomModalLabel" aria-hidden="true">
+        <!-- 일정 추가 모달 -->
+        <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="createRoomModalLabel">채팅방 만들기</h5>
+                        <h5 class="modal-title" id="eventModalLabel">일정 추가</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="createRoomForm">
-                            <div class="mb-3">
-                                <label for="roomName" class="form-label">방 이름</label>
-                                <input type="text" class="form-control" id="roomName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="maxUsers" class="form-label">최대 인원</label>
-                                <input type="number" class="form-control" id="maxUsers" min="2" max="100" value="10">
-                            </div>
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="isPrivate">
-                                    <label class="form-check-label" for="isPrivate">
-                                        비밀방으로 만들기
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="mb-3" id="passwordField" style="display: none;">
-                                <label for="roomPassword" class="form-label">비밀번호</label>
-                                <input type="password" class="form-control" id="roomPassword">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                        <button type="button" class="btn btn-primary" onclick="createRoom()">생성</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 일정 추가 모달 -->
-        <div class="modal fade" id="eventModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">일정 추가</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <form id="eventForm">
@@ -370,17 +330,17 @@
             
             participants.forEach(participant => {
                 const participantElement = document.createElement('div');
-                participantElement.className = 'participant-item';
+                participantElement.className = 'participant-item dropdown-item d-flex align-items-center justify-content-between';
                 participantElement.dataset.memberId = participant.memberId;
                 
                 participantElement.innerHTML = `
-                    <img src="${participant.memberImage || '/images/default-profile.png'}" 
-                         alt="프로필" class="participant-avatar">
-                    <div class="participant-info">
-                        <span class="participant-name">${participant.nickname}</span>
-                        ${participant.memberId === roomAdmin ? 
-                            '<span class="admin-badge">방장</span>' : ''}
+                    <div class="d-flex align-items-center">
+                        <img src="${participant.memberImage || '/images/default-profile.png'}" 
+                             alt="프로필" class="participant-avatar">
+                        <span class="participant-name ms-2">${participant.nickname}</span>
                     </div>
+                    ${participant.memberId === roomAdmin ? 
+                        '<span class="admin-badge"><i class="bi bi-star-fill text-warning"></i> 방장</span>' : ''}
                 `;
                 
                 participantsList.appendChild(participantElement);
@@ -465,11 +425,18 @@
                 navLinks: true,
                 events: [], // 초기 이벤트 데이터
                 
-                // 날짜 선택시 이벤트 추가 모달 표시
+                // select 이벤트 핸들러 수정
                 select: function(info) {
-                    $('#eventModal').modal('show');
                     document.getElementById('eventStartDate').value = info.startStr;
                     document.getElementById('eventEndDate').value = info.endStr;
+                    
+                    const eventModal = new bootstrap.Modal(document.getElementById('eventModal'), {
+                        backdrop: 'static',
+                        keyboard: false,
+                        centered: true  // 중앙 정렬 옵션 추가
+                    });
+                    
+                    eventModal.show();
                 },
                 
                 // 이벤트 클릭시 수정/삭제 모달 표시
@@ -497,43 +464,44 @@
                 start: new Date(),
                 allDay: true
             });
-        });
-        
-        // 일정 추가
-        function submitEvent() {
-            const eventData = {
-                title: document.getElementById('eventTitle').value,
-                start: document.getElementById('eventStartDate').value,
-                end: document.getElementById('eventEndDate').value,
-                description: document.getElementById('eventDescription').value,
-                roomId: roomId
-            };
             
-            $.ajax({
-                url: '/api/calendar/events',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(eventData),
-                success: function(response) {
-                    if (response.success) {
-                        calendar.addEvent(eventData);
-                        $('#eventModal').modal('hide');
-                        document.getElementById('eventForm').reset();
-                    } else {
-                        alert(response.error || '일정 추가에 실패했습니다.');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                    alert('일정 추가에 실패했습니다.');
-                }
+            // 모달 관련 이벤트 리스너 추가
+            const eventModalElement = document.getElementById('eventModal');
+            eventModalElement.addEventListener('hide.bs.modal', function () {
+                this.style.opacity = '0';
             });
-        }
-        
-        // 초기화
-        document.addEventListener('DOMContentLoaded', function() {
-            connect();
-            document.getElementById('messageForm').addEventListener('submit', sendMessage);
+            
+            // 일정 저장 후 모달 닫기 수정
+            window.submitEvent = function() {
+                const eventData = {
+                    title: document.getElementById('eventTitle').value,
+                    start: document.getElementById('eventStartDate').value,
+                    end: document.getElementById('eventEndDate').value,
+                    description: document.getElementById('eventDescription').value,
+                    roomId: roomId
+                };
+                
+                $.ajax({
+                    url: '/api/calendar/events',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(eventData),
+                    success: function(response) {
+                        if (response.success) {
+                            calendar.addEvent(eventData);
+                            const eventModal = bootstrap.Modal.getInstance(document.getElementById('eventModal'));
+                            eventModal.hide();
+                            document.getElementById('eventForm').reset();
+                        } else {
+                            alert(response.error || '일정 추가에 실패했습니다.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        alert('일정 추가에 실패했습니다.');
+                    }
+                });
+            };
         });
     </script>
 </th:block>
