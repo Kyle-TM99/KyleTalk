@@ -48,7 +48,7 @@ public class MemberController {
         Member member = memberService.getMember(memberId);
         session.setAttribute("isLogin", true);
         session.setAttribute("member", member);
-        return "redirect:/main";
+        return "redirect:/mainPage";
     }
 
     @GetMapping("/memberLogout")
