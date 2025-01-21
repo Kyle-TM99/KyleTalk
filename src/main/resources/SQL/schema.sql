@@ -1,10 +1,4 @@
-## DATABASE 생성 및 선택
-DROP DATABASE IF EXISTS kyletalk;
-CREATE DATABASE IF NOT EXISTS kyletalk;
-use kyletalk;
-
-
-## Member - 회원
+-- Member - 회원
 CREATE TABLE Member (
    member_no INTEGER AUTO_INCREMENT PRIMARY KEY,
    name VARCHAR(5) NOT NULL,
@@ -90,6 +84,3 @@ CREATE TABLE IF NOT EXISTS chat_calendar_event (
     CONSTRAINT fk_calendar_room FOREIGN KEY (room_id) REFERENCES chat_room(room_id) ON DELETE CASCADE,
     CONSTRAINT fk_calendar_creator FOREIGN KEY (created_by) REFERENCES member(member_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-select * from chat_room;
-select * from chat_message;
