@@ -69,6 +69,11 @@ public class MemberController {
             // 비밀번호 암호화
             member.setPass(passwordEncoder.encode(member.getPass()));
             
+            // 일반 계정일 경우 socialType 설정
+            member.setSocialType("none");
+            member.setSocial(false);
+            
+
             // 회원 등록
             int result = memberService.insertMember(member);
             log.info("회원가입 결과: {}", result);
