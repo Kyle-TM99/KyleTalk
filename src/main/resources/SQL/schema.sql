@@ -84,3 +84,11 @@ CREATE TABLE IF NOT EXISTS chat_calendar_event (
     CONSTRAINT fk_calendar_room FOREIGN KEY (room_id) REFERENCES chat_room(room_id) ON DELETE CASCADE,
     CONSTRAINT fk_calendar_creator FOREIGN KEY (created_by) REFERENCES member(member_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 비밀번호 찾기 테이블
+CREATE TABLE password_reset_token (id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    member_id VARCHAR(50) NOT NULL,
+    token VARCHAR(100) NOT NULL,
+    expiry_date DATETIME NOT NULL,
+    FOREIGN KEY (member_id) REFERENCES Member(member_id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

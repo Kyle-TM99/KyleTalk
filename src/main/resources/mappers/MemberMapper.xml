@@ -8,14 +8,14 @@
 <!-- 회원 조회 -->
 <select id="getMember" parameterType = "String" resultType="Member">
     SELECT *
-    FROM Member
+    FROM member
     WHERE member_id = #{memberId}
 </select>
 
 
 <!-- 회원 가입 -->
 <insert id="insertMember" parameterType="Member" useGeneratedKeys = "true" keyProperty = "memberNo">
-    INSERT INTO Member (name, member_id, pass, nickname, birth, gender, zipcode, address, address2, email, email_get, phone, member_reg_date, is_social, social_type, member_image ) 
+    INSERT INTO member (name, member_id, pass, nickname, birth, gender, zipcode, address, address2, email, email_get, phone, member_reg_date, is_social, social_type, member_image ) 
     VALUES (#{name}, #{memberId}, #{pass}, #{nickname}, #{birth}, #{gender}, #{zipcode}, #{address}, #{address2}, #{email}, #{emailGet}, #{phone}, NOW(), #{isSocial}, #{socialType}, #{memberImage})
 </insert>
 
@@ -23,49 +23,49 @@
 <!-- ID 중복 체크 -->
 <select id="checkMemberId" parameterType="String" resultType="int">
     SELECT COUNT(*) 
-    FROM Member 
+    FROM member 
     WHERE member_id = #{memberId}
 </select>
 
 <!-- 닉네임 중복 체크 -->
 <select id="checkNickname" parameterType="String" resultType="int">
     SELECT COUNT(*) 
-    FROM Member 
+    FROM member 
     WHERE nickname = #{nickname}
 </select>
 
 <!-- 이메일 중복 체크 -->
 <select id="checkEmail" parameterType="String" resultType="int">
     SELECT COUNT(*) 
-    FROM Member 
+    FROM member 
     WHERE email = #{email}
 </select>
 
 <!-- 전화번호 중복 체크 -->
 <select id="checkPhone" parameterType="String" resultType="int">
     SELECT COUNT(*) 
-    FROM Member 
+    FROM member 
     WHERE phone = #{phone}
 </select>
 
 <!-- 아이디 찾기 -->
 <select id="findMemberId" parameterType="Member" resultType="String">
     SELECT member_id 
-    FROM Member 
+    FROM member 
     WHERE name = #{name} 
     AND phone = #{phone}
 </select>
     
 <!-- 회원 수정 -->
 <update id = "updateMember" parameterType = "Member">
-	Update Member
+	Update member
 	SET name = #{name}, pass = #{pass}, zipcode = #{zipcode}, address = #{address}, address2 = #{address2}, email = #{email}, email_get = #{emailGet}, phone = #{phone}
 	WHERE member_no = #{memberNo}
 </update>
 
 <!-- 회원 탈퇴 -->
 <update id = "withdrawalMember" parameterType = "int">
-	Update Member
+	Update member
 	SET member_type = 2,
 		withdrawal_end_date = DATE_ADD(NOW(), INTERVAL 30 DAY)
 	WHERE member_no = #{memberNo}
@@ -73,26 +73,26 @@
 
 <!-- 탈퇴 만료 회원 삭제 처리 -->
 <delete id = "withdrawalExpiredMember">
-	DELETE FROM Member
+	DELETE FROM member
 	WHERE member_type = 2
 		AND withdrawal_end_date &lt; NOW();
 </delete>
 
 <!-- 회원 삭제 -->
 <delete id = "deleteMember" parameterType = "int">
-	DELETE FROM Member
+	DELETE FROM member
 	WHERE member_no = #{memberNo}
 </delete>
 
 <!-- 비밀번호 재설정 토큰 저장 -->
 <insert id="savePasswordResetToken" parameterType="PasswordResetToken">
-    INSERT INTO PasswordResetToken (member_id, token, expiry_date)
+    INSERT INTO password_reset_token (member_id, token, expiry_date)
     VALUES (#{memberId}, #{token}, #{expiryDate})
 </insert>
 
 <!-- 토큰으로 비밀번호 재설정 정보 조회 -->
 <select id="findByToken" parameterType="String" resultType="PasswordResetToken">
-    SELECT * FROM PasswordResetToken 
+    SELECT * FROM password_reset_token 
     WHERE token = #{token}
 </select>
 
@@ -105,7 +105,7 @@
 
 <!-- 사용된 토큰 삭제 -->
 <delete id="deletePasswordResetToken" parameterType="String">
-    DELETE FROM PasswordResetToken 
+    DELETE FROM password_reset_token 
     WHERE token = #{token}
 </delete>
 
