@@ -1,5 +1,5 @@
 -- Member - 회원
-CREATE TABLE Member (
+CREATE TABLE member (
    member_no INTEGER AUTO_INCREMENT PRIMARY KEY,
    name VARCHAR(5) NOT NULL,
    member_id VARCHAR(50) UNIQUE NOT NULL,
