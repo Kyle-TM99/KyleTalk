@@ -312,3 +312,54 @@
 .dropdown-item.text-danger:hover {
     background-color: #fff5f5;
 }
+
+/* 알림 드롭다운 스타일 */
+.notification-wrapper {
+    position: relative;
+}
+
+.notification-wrapper button {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+}
+
+.notification-wrapper button:hover {
+    color: #4A90E2;
+}
+
+.notification-dropdown {
+    margin-top: 0.5rem !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+}
+
+.notification-item {
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-header {
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+}
+
+/* 알림 아이콘 스타일 */
+#notificationDropdown {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+}
+
+#notificationDropdown:hover {
+    color: #4A90E2;
+}

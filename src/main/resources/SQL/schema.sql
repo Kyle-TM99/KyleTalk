@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS chat_room (
     max_users INT DEFAULT 100,   -- 최대 참여 인원
     current_users INT DEFAULT 0, -- 현재 참여 인원
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_room_creator FOREIGN KEY (created_by) REFERENCES member(member_id),
-    CONSTRAINT fk_room_admin FOREIGN KEY (room_admin) REFERENCES member(member_id)
+    CONSTRAINT fk_room_creator FOREIGN KEY (created_by) REFERENCES member(member_id) ON DELETE CASCADE,
+    CONSTRAINT fk_room_admin FOREIGN KEY (room_admin) REFERENCES member(member_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS chat_message (
@@ -44,8 +44,8 @@ CREATE TABLE IF NOT EXISTS chat_message (
     message TEXT NOT NULL,
     message_type VARCHAR(10) NOT NULL,
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_chat_room FOREIGN KEY (room_id) REFERENCES chat_room(room_id),
-    CONSTRAINT fk_chat_sender FOREIGN KEY (sender) REFERENCES member(member_id)
+    CONSTRAINT fk_chat_room FOREIGN KEY (room_id) REFERENCES chat_room(room_id) ON DELETE CASCADE,
+    CONSTRAINT fk_chat_sender FOREIGN KEY (sender) REFERENCES member(member_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 채팅방 참여자 테이블 추가
@@ -54,8 +54,8 @@ CREATE TABLE IF NOT EXISTS chat_room_participant (
     member_id VARCHAR(50),
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (room_id, member_id),
-    CONSTRAINT fk_participant_room FOREIGN KEY (room_id) REFERENCES chat_room(room_id),
-    CONSTRAINT fk_participant_member FOREIGN KEY (member_id) REFERENCES member(member_id)
+    CONSTRAINT fk_participant_room FOREIGN KEY (room_id) REFERENCES chat_room(room_id) ON DELETE CASCADE,
+    CONSTRAINT fk_participant_member FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 채팅방 게시판 테이블 추가
@@ -93,3 +93,18 @@ CREATE TABLE password_reset_token (
     expiry_date DATETIME NOT NULL,
     FOREIGN KEY (member_id) REFERENCES member(member_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 알림 테이블 추가
+CREATE TABLE IF NOT EXISTS notification (
+    notification_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    member_id VARCHAR(50) NOT NULL,
+    room_id VARCHAR(50) NOT NULL,
+    message TEXT NOT NULL,
+    sender VARCHAR(50) NOT NULL,
+    type VARCHAR(20) NOT NULL,  -- 'CHAT', 'BOARD', 'CALENDAR' 등
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notification_member FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE,
+    CONSTRAINT fk_notification_room FOREIGN KEY (room_id) REFERENCES chat_room(room_id) ON DELETE CASCADE,
+    CONSTRAINT fk_notification_sender FOREIGN KEY (sender) REFERENCES member(member_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

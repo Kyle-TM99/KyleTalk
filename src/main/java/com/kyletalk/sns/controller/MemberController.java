@@ -72,6 +72,7 @@ public class MemberController {
             // 일반 계정일 경우 socialType 설정
             member.setSocialType("none");
             member.setSocial(false);
+            member.setMemberImage("/images/defaultProfile.png");
             
 
             // 회원 등록

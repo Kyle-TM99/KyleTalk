@@ -34,14 +34,25 @@
 						</th:block>
 
 						<th:block th:if="${session.isLogin}">
-							<!-- 알림 아이콘 -->
-							<div class="position-relative me-3">
-								<a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#notificationModal">
+							<!-- 알림 드롭다운 -->
+							<div class="dropdown notification-wrapper">
+								<button class="nav-link position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false">
 									<i class="bi bi-bell fs-5"></i>
-									<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-										2
+									<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-count" style="display: none;">
+										0
 									</span>
-								</a>
+								</button>
+								<div class="dropdown-menu dropdown-menu-end notification-dropdown p-0" style="width: 350px; max-height: 400px; overflow-y: auto;">
+									<div class="dropdown-header border-bottom py-3 px-3">
+										<div class="d-flex justify-content-between align-items-center">
+											<h6 class="mb-0">알림</h6>
+											<button class="btn btn-sm text-primary" onclick="markAllAsRead()">모두 읽음</button>
+										</div>
+									</div>
+									<div class="notifications-container">
+										<!-- 알림 목록이 여기에 동적으로 추가됨 -->
+									</div>
+								</div>
 							</div>
 
 							<!-- 프로필 드롭다운 -->
@@ -73,4 +84,44 @@
 			</div>
 		</nav>
 	</div>
+
+	<!-- 알림 관련 JavaScript 추가 -->
+	<script th:inline="javascript">
+		const currentMemberId = [[${session.member?.memberId}]];
+		let lastNotificationId = 0;
+
+		// 주기적으로 새로운 알림 확인
+		function checkNewNotifications() {
+			if (!currentMemberId) return;
+			
+			fetch(`/api/notifications/unread/${currentMemberId}`)
+				.then(response => response.json())
+				.then(notifications => {
+					// 새로운 알림만 필터링
+					const newNotifications = notifications.filter(n => n.notificationId > lastNotificationId);
+					
+					if (newNotifications.length > 0) {
+						// 마지막 알림 ID 업데이트
+						lastNotificationId = Math.max(...notifications.map(n => n.notificationId));
+						
+						// 알림 표시
+						newNotifications.forEach(showNotification);
+						updateNotificationBadge(notifications.length);
+					}
+				});
+		}
+
+		// 초기 로드 및 주기적 확인
+		document.addEventListener('DOMContentLoaded', () => {
+			checkNewNotifications();
+			setInterval(checkNewNotifications, 5000); // 5초마다 확인
+		});
+	</script>
+
+	<!-- 헤더 상단에 추가 -->
+	<head>
+		<!-- SockJS와 STOMP 클라이언트 라이브러리 추가 -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+	</head>
 </html>

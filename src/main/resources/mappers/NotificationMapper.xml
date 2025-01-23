@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kyletalk.sns.mapper.NotificationMapper">
+    
+    <!-- 알림 저장 -->
+    <insert id="insertNotification" parameterType="NotificationMessage">
+        INSERT INTO notification (
+            member_id, room_id, message, sender, type, is_read, created_at
+        ) VALUES (
+            #{memberId}, #{roomId}, #{message}, #{sender}, #{type}, 
+            FALSE, CURRENT_TIMESTAMP
+        )
+    </insert>
+    
+    <!-- 읽지 않은 알림 조회 -->
+    <select id="getUnreadNotifications" resultType="NotificationMessage">
+        SELECT 
+            n.notification_id as notificationId,
+            n.member_id as memberId,
+            n.room_id as roomId,
+            n.message,
+            n.sender,
+            m.nickname as senderNickname,
+            n.type,
+            n.is_read as isRead,
+            n.created_at as createdAt
+        FROM notification n
+        JOIN member m ON n.sender = m.member_id
+        WHERE n.member_id = #{memberId} 
+        AND n.is_read = FALSE
+        ORDER BY n.created_at DESC
+    </select>
+    
+    <!-- 알림 읽음 처리 -->
+    <update id="markAsRead">
+        UPDATE notification 
+        SET is_read = TRUE 
+        WHERE notification_id = #{notificationId}
+    </update>
+    
+    <!-- 채팅방 참여자 목록 조회 -->
+    <select id="getRoomParticipants" resultType="String">
+        SELECT member_id 
+        FROM chat_room_participant
+        WHERE room_id = #{roomId}
+    </select>
+</mapper> 

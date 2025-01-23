@@ -151,4 +151,9 @@
         DELETE FROM chat_room_participant WHERE room_id = #{roomId}
     </delete>
     
+    <!-- 채팅방의 모든 알림 삭제 -->
+    <delete id="deleteAllNotifications" parameterType="String">
+        DELETE FROM notification WHERE room_id = #{roomId}
+    </delete>
+    
 </mapper> 

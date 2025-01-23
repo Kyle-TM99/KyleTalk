@@ -45,4 +45,6 @@ public interface ChatMapper {
     void deleteAllMessages(String roomId);
     // 채팅방의 모든 참여자 삭제
     void deleteAllParticipants(String roomId);
+    // 채팅방의 모든 알림 삭제
+    void deleteAllNotifications(String roomId);
 } 

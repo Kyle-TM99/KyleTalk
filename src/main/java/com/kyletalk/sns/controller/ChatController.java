@@ -4,6 +4,8 @@ import com.kyletalk.sns.domain.ChatMessage;
 import com.kyletalk.sns.domain.ChatRoom;
 import com.kyletalk.sns.domain.Member;
 import com.kyletalk.sns.service.ChatService;
+import com.kyletalk.sns.domain.NotificationMessage;
+import com.kyletalk.sns.mapper.NotificationMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -36,22 +38,45 @@ public class ChatController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private NotificationMapper notificationMapper;
+
     // 채팅방 삭제
     @PostMapping("/chat/delete/{roomId}")
     @ResponseBody
-    public Map<String, Object> deleteChatRoom(@PathVariable("roomId") String roomId) {
+    public Map<String, Object> deleteChatRoom(@PathVariable("roomId") String roomId, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
         try {
+            Member currentMember = (Member) session.getAttribute("member");
+            
+            // 방장 권한 확인
+            if (!chatService.isRoomAdmin(roomId, currentMember.getMemberId())) {
+                throw new RuntimeException("방장만 채팅방을 삭제할 수 있습니다.");
+            }
+            
+            // 모든 참여자에게 방 삭제 알림 전송
+            ChatMessage systemMessage = new ChatMessage();
+            systemMessage.setType("ROOM_DELETED");
+            systemMessage.setRoomId(roomId);
+            systemMessage.setMessage("채팅방이 방장에 의해 삭제되었습니다.");
+            messagingTemplate.convertAndSend("/topic/chat/" + roomId, systemMessage);
+            
+            // 잠시 대기하여 메시지가 전송될 시간을 줌
+            Thread.sleep(500);
+            
+            // 채팅방 삭제
+            chatService.deleteAllMessages(roomId);
+            chatService.deleteAllParticipants(roomId);
+            chatService.deleteAllNotifications(roomId);
             chatService.deleteChatRoom(roomId);
-            Map<String, Object> response = new HashMap<>();
+            
             response.put("success", true);
             response.put("message", "채팅방이 삭제되었습니다.");
-            return response;
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("error", e.getMessage());
-            return response;
         }
+        return response;
     }
 
     // 채팅방 목록 페이지
@@ -75,6 +100,16 @@ public class ChatController {
         
         try {
             ChatRoom room = chatService.findRoom(roomId);
+            if (room == null) {
+                throw new RuntimeException("존재하지 않는 채팅방입니다.");
+            }
+            
+            // 참여자 확인
+            Member member = (Member) session.getAttribute("member");
+            if (!chatService.isParticipant(roomId, member.getMemberId())) {
+                chatService.addParticipant(roomId, member.getMemberId());
+            }
+            
             model.addAttribute("room", room);
             return "views/chat";
         } catch (Exception e) {
@@ -139,7 +174,41 @@ public class ChatController {
     public ChatMessage sendMessage(@DestinationVariable("roomId") String roomId, ChatMessage message) {
         message.setType("CHAT");
         message.setSentAt(new Timestamp(System.currentTimeMillis()));
+        
+        // 채팅 메시지 저장
         chatService.insertMessage(message);
+        
+        // 채팅방 참여자들에게 알림 생성
+        List<String> participants = notificationMapper.getRoomParticipants(roomId);
+        
+        for (String participantId : participants) {
+            // 메시지 발신자는 제외
+            if (!participantId.equals(message.getSender())) {
+                NotificationMessage notification = new NotificationMessage();
+                notification.setMemberId(participantId);
+                notification.setRoomId(roomId);
+                notification.setMessage(message.getMessage());
+                notification.setSender(message.getSender());
+                notification.setSenderNickname(message.getNickname());
+                notification.setType("CHAT");
+                
+                try {
+                    // DB에 알림 저장
+                    notificationMapper.insertNotification(notification);
+                    log.info("Notification saved for user: {}", participantId);
+                    
+                    // 실시간 알림 전송
+                    messagingTemplate.convertAndSend(
+                        "/topic/notifications/" + participantId, 
+                        notification
+                    );
+                    log.info("Real-time notification sent to user: {}", participantId);
+                } catch (Exception e) {
+                    log.error("Error sending notification: {}", e.getMessage());
+                }
+            }
+        }
+        
         return message;
     }
 
@@ -151,6 +220,11 @@ public class ChatController {
             // 참여자 추가
             if (!chatService.isParticipant(roomId, message.getSender())) {
                 chatService.addParticipant(roomId, message.getSender());
+            }
+            
+            // 여기서 기본 프로필 이미지가 설정될 수 있습니다
+            if (message.getProfileImage() == null) {
+                message.setProfileImage("/images/defaultProfile.png"); // 이 부분을 확인
             }
             
             // 참여자 목록 업데이트
@@ -171,13 +245,13 @@ public class ChatController {
                        SimpMessageHeaderAccessor headerAccessor,
                        @DestinationVariable("roomId") String roomId) {
         try {
-            ChatRoom room = chatService.findRoom(roomId);
             chatMessage.setRoomId(roomId);
             
             Member member = (Member) headerAccessor.getSessionAttributes().get("member");
             if (member != null) {
                 chatMessage.setNickname(member.getNickname());
-                chatMessage.setProfileImage(member.getMemberImage());
+                chatMessage.setProfileImage(member.getMemberImage() != null ? 
+                    member.getMemberImage() : "/images/defaultProfile.png");  // 이 부분도 확인
             }
             
             headerAccessor.getSessionAttributes().put("username", chatMessage.getSender());

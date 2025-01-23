@@ -266,8 +266,18 @@
                 
                 // 채팅 메시지 구독
                 stompClient.subscribe('/topic/chat/' + roomId, function(message) {
-                    console.log('Received message:', message);
-                    showMessage(JSON.parse(message.body));
+                    const receivedMessage = JSON.parse(message.body);
+                    
+                    if (receivedMessage.type === 'ROOM_DELETED') {
+                        // 연결 종료
+                        if (stompClient !== null) {
+                            stompClient.disconnect();
+                        }
+                        alert('채팅방이 방장에 의해 삭제되었습니다.');
+                        window.location.href = '/chat';  // 채팅방 목록으로 리다이렉트
+                        return;  // 메시지 표시하지 않음
+                    }
+                    showMessage(receivedMessage);
                 });
                 
                 // 참여자 목록 구독
@@ -339,7 +349,7 @@
                 messageHTML = `
                     ${!isSentByMe ? `
                         <div class="message-info">
-                            <img src="${message.profileImage || '/images/default-profile.png'}" 
+                            <img src="${message.profileImage || '/images/defaultProfile.png'}" 
                                  alt="프로필" class="sender-avatar">
                             <span class="sender-name">${message.nickname}</span>
                         </div>
@@ -374,7 +384,7 @@
                 
                 participantsList.append(`
                     <div class="dropdown-item d-flex align-items-center">
-                        <img src="${participant.memberImage || '/images/default-profile.png'}" 
+                        <img src="${participant.memberImage || '/images/defaultProfile.png'}" 
                              class="rounded-circle me-2" 
                              style="width: 30px; height: 30px;">
                         <span>${participant.nickname}${adminBadge}</span>
@@ -401,7 +411,10 @@
                 contentType: 'application/json',
                 success: function(response) {
                     if (response.success) {
-                        alert(response.message);
+                        // WebSocket 연결 종료
+                        if (stompClient !== null) {
+                            stompClient.disconnect();
+                        }
                         window.location.href = '/chat';
                     } else {
                         alert(response.error || '채팅방 삭제에 실패했습니다.');

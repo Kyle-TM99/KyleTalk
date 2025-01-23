@@ -162,4 +162,16 @@ public class ChatService {
             }
         }
     }
+
+    public void deleteAllMessages(String roomId) {
+        chatMapper.deleteAllMessages(roomId);
+    }
+
+    public void deleteAllParticipants(String roomId) {
+        chatMapper.deleteAllParticipants(roomId);
+    }
+
+    public void deleteAllNotifications(String roomId) {
+        chatMapper.deleteAllNotifications(roomId);
+    }
 } 
