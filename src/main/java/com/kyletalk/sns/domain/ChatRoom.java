@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import java.sql.Timestamp;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -16,6 +17,8 @@ public class ChatRoom {
     private int maxUsers;
     private int currentUsers;
     private Timestamp createdAt;
+    private String creatorNickname;
+    private String adminNickname;
     private List<ChatMessage> recentMessages;
     
     @Override

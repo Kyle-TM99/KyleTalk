@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main_layout}">
+
+<head>
+    <style>
+        .friend-card {
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .friend-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .search-box .form-control {
+            border-radius: 20px;
+            padding-left: 20px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+        
+        .search-box .form-control:focus {
+            background-color: #fff;
+            box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+            border-color: #4A90E2;
+        }
+        
+        .filter-btn {
+            border-radius: 15px;
+            padding: 8px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn.active {
+            background-color: #4A90E2;
+            color: white;
+            border-color: #4A90E2;
+        }
+        
+        .online-indicator {
+            width: 10px;
+            height: 10px;
+            background-color: #28a745;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 3px;
+            right: 3px;
+            border: 2px solid white;
+        }
+        
+        .friend-actions .dropdown-toggle::after {
+            display: none;
+        }
+        
+        .friend-actions .dropdown-menu {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .friend-request-card {
+            background-color: #f8f9fa;
+            border-left: 4px solid #4A90E2;
+        }
+        
+        .section-title {
+            position: relative;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: #4A90E2;
+        }
+    </style>
+</head>
+
+<div layout:fragment="content">
+    <div class="container py-5">
+        <div class="row">
+            <!-- 왼쪽 사이드바 -->
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="search-box mb-4">
+                            <div class="input-group">
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="friendSearch" 
+                                       placeholder="이름으로 친구 찾기...">
+                                <button class="btn btn-primary" id="searchBtn">
+                                    <i class="bi bi-search"></i> 검색
+                                </button>
+                            </div>
+                            <small class="text-muted mt-1">
+                                닉네임을 입력해주세요.
+                            </small>
+                        </div>
+                        <div class="friend-filters d-flex flex-column gap-2">
+                            <button class="filter-btn btn btn-outline-primary active" data-filter="all">
+                                <i class="bi bi-people-fill me-2"></i>전체 친구
+                            </button>
+                            <button class="filter-btn btn btn-outline-success" data-filter="online">
+                                <i class="bi bi-circle-fill text-success me-2"></i>온라인
+                            </button>
+                            <button class="filter-btn btn btn-outline-warning" data-filter="requests">
+                                <i class="bi bi-person-plus-fill me-2"></i>친구 요청
+                                <span th:if="${not #lists.isEmpty(friendRequests)}" 
+                                      class="badge bg-warning text-dark ms-2" 
+                                      th:text="${#lists.size(friendRequests)}">0</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 메인 컨텐츠 -->
+            <div class="col-md-9">
+                <!-- 친구 요청 섹션 -->
+                <div class="friend-requests mb-4" th:if="${not #lists.isEmpty(friendRequests)}">
+                    <h5 class="section-title">받은 친구 요청</h5>
+                    <div class="row g-3">
+                        <div th:each="request : ${friendRequests}" class="col-md-6">
+                            <div class="card friend-request-card border-0 shadow-sm">
+                                <div class="card-body d-flex align-items-center">
+                                    <img th:src="${request.memberImage}" 
+                                         class="rounded-circle me-3" 
+                                         style="width: 48px; height: 48px;"
+                                         alt="프로필 이미지">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1" th:text="${request.nickname}">닉네임</h6>
+                                        <small class="text-muted" 
+                                               th:text="${#temporals.format(request.requestDate, 'yyyy-MM-dd HH:mm')}">
+                                            요청일
+                                        </small>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary accept-request" 
+                                                th:data-id="${request.requestId}">
+                                            <i class="bi bi-check-lg me-1"></i>수락
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger decline-request" 
+                                                th:data-id="${request.requestId}">
+                                            <i class="bi bi-x-lg me-1"></i>거절
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 친구 목록 섹션 -->
+                <div class="friends-list">
+                    <h5 class="section-title">친구 목록</h5>
+                    <div class="row g-3" id="friendsList">
+                        <div th:each="friend : ${friends}" class="col-md-6">
+                            <div class="card friend-card" th:data-online="${friend.online}">
+                                <div class="card-body d-flex align-items-center p-3">
+                                    <div class="position-relative">
+                                        <img th:src="${friend.memberImage}" 
+                                             class="rounded-circle me-3" 
+                                             style="width: 48px; height: 48px;"
+                                             alt="프로필 이미지">
+                                        <span th:if="${friend.online}" class="online-indicator"></span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1" th:text="${friend.nickname}">닉네임</h6>
+                                        <small class="text-muted" th:text="${friend.statusMessage}">상태 메시지</small>
+                                    </div>
+                                    <div class="friend-actions dropdown">
+                                        <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" th:href="@{'/chat/dm/' + ${friend.memberId}}">
+                                                    <i class="bi bi-chat-dots me-2 text-primary"></i>1:1 채팅
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" th:href="@{'/profile/' + ${friend.memberId}}">
+                                                    <i class="bi bi-person-lines-fill me-2 text-info"></i>프로필 보기
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger remove-friend" 
+                                                   href="#" 
+                                                   th:data-id="${friend.memberId}">
+                                                    <i class="bi bi-person-x me-2"></i>친구 삭제
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    console.log("Document ready!");
+    
+    const searchInput = $('#friendSearch');
+    const searchBtn = $('#searchBtn');
+    const friendsList = $('#friendsList');
+    const friendRequests = $('.friend-requests');
+    
+    // 요소들이 제대로 선택되었는지 확인
+    console.log("Search Input:", searchInput.length);
+    console.log("Search Button:", searchBtn.length);
+    console.log("Friends List:", friendsList.length);
+    
+    // 검색 실행 함수
+    const performSearch = () => {
+        console.log("Performing search...");
+        const keyword = searchInput.val().trim();
+        console.log("Search keyword:", keyword);
+        
+        if (keyword === '') {
+            alert('검색어를 입력해주세요.');
+            return;
+        }
+        
+        // 검색 중임을 표시
+        friendsList.html(`
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">검색중...</span>
+                </div>
+                <p class="mt-3">검색중입니다...</p>
+            </div>
+        `);
+        
+        // AJAX 요청
+        $.ajax({
+            url: '/friends/search',
+            type: 'GET',
+            data: { keyword: keyword },
+            beforeSend: function() {
+                console.log("Sending search request...");
+            },
+            success: function(users) {
+                console.log("Search results:", users);
+                friendsList.empty();
+                friendRequests.hide();
+                
+                if (users.length === 0) {
+                    friendsList.html(`
+                        <div class="col-12 text-center py-5">
+                            <i class="bi bi-search" style="font-size: 2rem;"></i>
+                            <p class="mt-3">검색 결과가 없습니다.</p>
+                        </div>
+                    `);
+                } else {
+                    users.forEach(user => {
+                        const userCard = createUserCard(user);
+                        friendsList.append(userCard);
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Search failed:', error);
+                console.error('Status:', status);
+                console.error('Response:', xhr.responseText);
+                alert('검색 중 오류가 발생했습니다.');
+            }
+        });
+    };
+
+    // 검색 버튼 클릭 이벤트
+    searchBtn.on('click', function(e) {
+        console.log("Search button clicked!");
+        e.preventDefault();
+        performSearch();
+    });
+    
+    // 엔터키 이벤트
+    searchInput.on('keypress', function(e) {
+        if (e.which === 13) {
+            console.log("Enter key pressed!");
+            e.preventDefault();
+            performSearch();
+        }
+    });
+
+    // 필터 버튼 기능
+    $('.friend-filters button').on('click', function() {
+        const filter = $(this).data('filter');
+        
+        // 버튼 활성화 상태 변경
+        $('.filter-btn').removeClass('active');
+        $(this).addClass('active');
+        
+        // 검색창 초기화
+        searchInput.val('');
+        
+        if (filter === 'all') {
+            friendRequests.hide();
+            friendsList.show();
+            $('.friend-card').show();
+        } else if (filter === 'online') {
+            friendRequests.hide();
+            friendsList.show();
+            $('.friend-card').hide();
+            $('.friend-card[data-online="true"]').show();
+        } else if (filter === 'requests') {
+            friendsList.hide();
+            friendRequests.show();
+        }
+    });
+
+    // 친구 요청 보내기
+    $(document).on('click', '.send-friend-request', function() {
+        const targetId = $(this).data('id');
+        const $btn = $(this);
+        
+        $btn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm"></i> 처리중...');
+        
+        $.ajax({
+            url: '/friends/request',
+            type: 'POST',
+            data: { targetId: targetId },
+            success: function(response) {
+                if (response.success) {
+                    alert('친구 요청을 보냈습니다.');
+                    $btn.removeClass('btn-primary')
+                        .addClass('btn-outline-secondary')
+                        .html('<i class="bi bi-clock"></i> 요청됨')
+                        .prop('disabled', true);
+                } else {
+                    alert(response.message);
+                    $btn.prop('disabled', false)
+                        .html('<i class="bi bi-person-plus-fill"></i> 친구 추가');
+                }
+            },
+            error: function() {
+                alert('요청 처리 중 오류가 발생했습니다.');
+                $btn.prop('disabled', false)
+                    .html('<i class="bi bi-person-plus-fill"></i> 친구 추가');
+            }
+        });
+    });
+
+    // 친구 요청 수락
+    $('.accept-request').on('click', function() {
+        const requestId = $(this).data('id');
+        const $btn = $(this);
+        const $card = $btn.closest('.friend-request-card');
+        
+        $btn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm"></i>');
+        
+        $.ajax({
+            url: '/friends/accept',
+            type: 'POST',
+            data: { requestId: requestId },
+            success: function(response) {
+                if (response.success) {
+                    $card.fadeOut(300, function() {
+                        $(this).remove();
+                        if ($('.friend-request-card').length === 0) {
+                            location.reload();
+                        }
+                    });
+                } else {
+                    alert(response.message);
+                    $btn.prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>수락');
+                }
+            },
+            error: function() {
+                alert('요청 처리 중 오류가 발생했습니다.');
+                $btn.prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>수락');
+            }
+        });
+    });
+
+    // 친구 요청 거절
+    $('.decline-request').on('click', function() {
+        const requestId = $(this).data('id');
+        const $btn = $(this);
+        const $card = $btn.closest('.friend-request-card');
+        
+        if (!confirm('친구 요청을 거절하시겠습니까?')) return;
+        
+        $btn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm"></i>');
+        
+        $.ajax({
+            url: '/friends/decline',
+            type: 'POST',
+            data: { requestId: requestId },
+            success: function(response) {
+                if (response.success) {
+                    $card.fadeOut(300, function() {
+                        $(this).remove();
+                        if ($('.friend-request-card').length === 0) {
+                            location.reload();
+                        }
+                    });
+                } else {
+                    alert(response.message);
+                    $btn.prop('disabled', false).html('<i class="bi bi-x-lg me-1"></i>거절');
+                }
+            },
+            error: function() {
+                alert('요청 처리 중 오류가 발생했습니다.');
+                $btn.prop('disabled', false).html('<i class="bi bi-x-lg me-1"></i>거절');
+            }
+        });
+    });
+
+    // 친구 삭제
+    $(document).on('click', '.remove-friend', function() {
+        if (!confirm('정말 이 친구를 삭제하시겠습니까?')) return;
+        
+        const friendId = $(this).data('id');
+        $.ajax({
+            url: '/friends/remove',
+            type: 'POST',
+            data: { friendId: friendId },
+            success: function(response) {
+                if (response.success) {
+                    alert('친구가 삭제되었습니다.');
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function() {
+                alert('요청 처리 중 오류가 발생했습니다.');
+            }
+        });
+    });
+
+    // 검색 결과 카드 생성 함수
+    const createUserCard = (user) => {
+        console.log("Creating card for user:", user);
+        return `
+            <div class="col-md-6">
+                <div class="card friend-card">
+                    <div class="card-body d-flex align-items-center p-3">
+                        <div class="position-relative">
+                            <img src="${user.memberImage || '/images/default-profile.png'}" 
+                                 class="rounded-circle me-3" 
+                                 style="width: 48px; height: 48px;"
+                                 alt="프로필 이미지">
+                            ${user.online ? '<span class="online-indicator"></span>' : ''}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${user.nickname}</h6>
+                            <small class="text-muted">${user.statusMessage || ''}</small>
+                        </div>
+                        <div class="friend-actions">
+                            ${user.isFriend ? `
+                                <button class="btn btn-sm btn-outline-primary" disabled>
+                                    <i class="bi bi-person-check-fill"></i> 친구
+                                </button>
+                            ` : user.isRequested ? `
+                                <button class="btn btn-sm btn-outline-secondary" disabled>
+                                    <i class="bi bi-clock"></i> 요청됨
+                                </button>
+                            ` : `
+                                <button class="btn btn-sm btn-primary send-friend-request" data-id="${user.memberId}">
+                                    <i class="bi bi-person-plus-fill"></i> 친구 추가
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+</script>
+</html>

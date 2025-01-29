@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import lombok.extern.slf4j.Slf4j;
 import java.sql.Timestamp;
@@ -75,7 +76,11 @@ public class ChatController {
         
         try {
             ChatRoom room = chatService.findRoom(roomId);
+            List<ChatMessage> messages = chatService.getMessages(roomId);  // 채팅 메시지 조회
+            
             model.addAttribute("room", room);
+            model.addAttribute("messages", messages);  // 메시지를 모델에 추가
+            
             return "views/chat";
         } catch (Exception e) {
             log.error("채팅방 입장 실패: {}", e.getMessage());

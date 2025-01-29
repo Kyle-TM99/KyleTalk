@@ -162,4 +162,12 @@ public class ChatService {
             }
         }
     }
+
+    public List<ChatRoom> getHotChatRooms(int limit) {
+        return chatMapper.getHotChatRooms(limit);
+    }
+
+    public List<ChatMessage> getMessages(String roomId) {
+        return chatMapper.getMessages(roomId);
+    }
 } 

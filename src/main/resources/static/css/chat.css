@@ -77,24 +77,27 @@
 .chat-wrapper {
     height: calc(100vh - 60px);
     padding: 1rem;
+    position: relative;
+    z-index: 1;
+    background-color: #f5f7fa;
 }
 
 /* 메인 채팅 컨테이너 */
 .split-container {
     background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 15px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     height: 100%;
     display: flex;
+    overflow: hidden;
 }
 
 /* 채팅방 헤더 */
 .chat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    background: #fff;
+    border-bottom: 1px solid #edf2f7;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
 }
 
 .header-left, .header-right {
@@ -137,7 +140,8 @@
 .chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: 1rem;
+    background: #fff;
 }
 
 .message {
@@ -195,21 +199,25 @@
 
 /* 입력 영역 */
 .chat-input-area {
-    padding: 1rem 1.5rem;
+    padding: 1rem;
     background: #fff;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid #edf2f7;
 }
 
 .input-group {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     display: flex;
     gap: 0.5rem;
 }
 
 .form-control {
-    border: 1px solid #e2e8f0;
-    border-radius: 24px;
-    padding: 0.75rem 1.25rem;
-    font-size: 0.9375rem;
+    border: none;
+    background: transparent;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
 }
 
 .form-control:focus {
@@ -218,15 +226,11 @@
 }
 
 .send-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
     background: #4A90E2;
+    color: white;
     border: none;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
     transition: all 0.2s;
 }
 
@@ -336,29 +340,28 @@
 
 /* 탭 스타일 */
 .nav-tabs {
-    background-color: #f8f9fa;
-    padding: 10px 10px 0;
-    border-bottom: none;
+    background: #f8fafc;
+    border: none;
+    padding: 0.5rem 0.5rem 0;
 }
 
 .nav-tabs .nav-link {
+    color: #64748b;
     border: none;
-    color: #495057;
-    padding: 8px 15px;
-    border-radius: 5px 5px 0 0;
+    border-radius: 8px 8px 0 0;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
 }
 
 .nav-tabs .nav-link.active {
-    background-color: #fff;
-    border-bottom: 2px solid #0d6efd;
+    color: #4A90E2;
+    background: #fff;
+    border-bottom: 2px solid #4A90E2;
 }
 
 /* 게시판 스타일 */
 .board-container {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
+    padding: 1rem;
 }
 
 .board-header {
@@ -411,6 +414,10 @@
 /* FullCalendar 커스텀 스타일 */
 .fc {
     height: 100% !important;
+    background-color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .fc .fc-toolbar {
@@ -425,17 +432,63 @@
     padding: 0.4rem 0.65rem;
 }
 
+.fc-day-today {
+    background-color: #e8f4fe !important;
+}
+
+.fc-daygrid-day-number {
+    color: #495057;
+    padding: 8px !important;
+    font-weight: normal !important;
+}
+
+.fc-col-header-cell {
+    background-color: #f8f9fa;
+    padding: 8px 0 !important;
+}
+
+.fc-col-header-cell-cushion {
+    color: #495057;
+    text-decoration: none !important;
+    font-weight: 500;
+}
+
+.fc-daygrid-event {
+    margin: 2px 0 !important;
+    padding: 2px 4px !important;
+    border-radius: 4px !important;
+    font-size: 0.9em !important;
+    line-height: 1.3 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.fc-event-time {
+    font-size: 0.85em;
+}
+
+.fc-event-title {
+    font-weight: 500;
+}
+
+.fc-daygrid-more-link {
+    color: #4A90E2 !important;
+    text-decoration: none !important;
+}
+
 /* 채팅 섹션 */
 .chat-section {
     flex: 1;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #e2e8f0;
+    border-right: 1px solid #edf2f7;
 }
 
 /* 사이드 섹션 */
 .side-section {
-    flex: 1;
+    width: 600px;
+    background: #fff;
     display: flex;
     flex-direction: column;
 }
@@ -519,58 +572,32 @@
 
 /* 모달 공통 스타일 */
 .modal {
-    background-color: rgba(0, 0, 0, 0.5);
-    padding-right: 0 !important;
+    display: none;
 }
 
-.modal-dialog.modal-dialog-centered {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin: 0 auto !important;
-    min-height: calc(100% - 1rem) !important;
-    max-width: 500px !important;
+.modal.show {
+    display: block;
 }
 
-/* 모달 애니메이션 */
+.modal-dialog-centered {
+    margin: 1.75rem auto;
+    max-width: 500px;
+    width: 95%;
+}
+
 .modal.fade .modal-dialog {
-    transform: scale(0.8) !important;
-    opacity: 0 !important;
-    transition: all 0.2s ease-in-out !important;
+    transform: translate(0, -50px);
+    transition: transform 0.3s ease-out;
 }
 
 .modal.show .modal-dialog {
-    transform: scale(1) !important;
-    opacity: 1 !important;
+    transform: none;
 }
 
-/* 모달 백드롭 */
-.modal-backdrop {
-    opacity: 0 !important;
-    transition: opacity 0.2s ease-in-out !important;
-}
-
-.modal-backdrop.show {
-    opacity: 0.5 !important;
-}
-
-/* 모달 컨텐츠 */
+/* 모달 내용 스타일링 */
 .modal-content {
-    border: none !important;
-    border-radius: 15px !important;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
-}
-
-/* 이벤트 모달 특정 스타일 */
-#eventModal .modal-dialog {
-    max-width: 500px !important;
-    width: 95% !important;
-    margin: 1.75rem auto !important;
-}
-
-#eventModal .modal-content {
-    background-color: #fff;
-    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* 모달 닫기 버튼 */
@@ -618,4 +645,85 @@
 #boardModal .form-control:focus {
     border-color: #4A90E2;
     box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+}
+
+/* 모달 백드롭 스타일 */
+.modal-backdrop {
+    z-index: 1040;
+}
+
+/* 모달 z-index 조정 */
+.modal {
+    z-index: 1050;
+}
+
+/* 날짜 링크 스타일 제거 */
+.fc a {
+    text-decoration: none !important;
+    color: inherit !important;
+}
+
+/* 날짜 셀 스타일 */
+.fc-daygrid-day {
+    background: white !important;
+    border: 1px solid #ddd !important;
+}
+
+/* 날짜 숫자 스타일 */
+.fc-daygrid-day-number {
+    color: #495057;
+    padding: 8px !important;
+    font-weight: normal !important;
+}
+
+/* 오늘 날짜 강조 */
+.fc-day-today {
+    background-color: #e8f4fe !important;
+}
+
+/* 이벤트 스타일 */
+.fc-daygrid-event {
+    margin: 2px 0 !important;
+    padding: 2px 4px !important;
+    border-radius: 4px !important;
+    font-size: 0.9em !important;
+    line-height: 1.3 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* 헤더 버튼 스타일 */
+.chat-header .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.chat-header .btn-light {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.chat-header .btn-danger {
+    background: #dc3545;
+    border: none;
+}
+
+.chat-header .btn-warning {
+    background: #ffc107;
+    border: none;
+    color: #000;
+}
+
+/* 게시판 스타일 */
+.board-row {
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+}
+
+.board-row:hover {
+    background: #f8fafc;
 } 

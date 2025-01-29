@@ -20,7 +20,9 @@ CREATE TABLE member (
    social_type ENUM('none', 'kakao', 'google') DEFAULT 'none' NOT NULL, -- 소셜 로그인 유형
    withdrawal_end_date   TIMESTAMP NULL,
    ban_end_date   TIMESTAMP NULL,
-   reported_count INTEGER DEFAULT 0 NOT NULL
+   reported_count INTEGER DEFAULT 0 NOT NULL,
+   status_message VARCHAR(100),
+   is_online BOOLEAN DEFAULT false
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS chat_room (
@@ -60,6 +62,7 @@ CREATE TABLE IF NOT EXISTS chat_room_participant (
 
 -- 채팅방 게시판 테이블 추가
 CREATE TABLE IF NOT EXISTS chat_board_event (
+	board_id BIGINT AUTO_INCREMENT PRIMARY KEY,
 	room_id VARCHAR(50),
     member_id VARCHAR(50),
     board_title VARCHAR(50) NOT NULL,
@@ -93,3 +96,23 @@ CREATE TABLE password_reset_token (
     expiry_date DATETIME NOT NULL,
     FOREIGN KEY (member_id) REFERENCES member(member_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 친구 관계 테이블
+CREATE TABLE friendship (
+    member_id1 VARCHAR(50) NOT NULL,
+    member_id2 VARCHAR(50) NOT NULL,
+    friends_since TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (member_id1, member_id2),
+    FOREIGN KEY (member_id1) REFERENCES member(member_id),
+    FOREIGN KEY (member_id2) REFERENCES member(member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 친구 요청 테이블
+CREATE TABLE friend_request (
+    request_id VARCHAR(36) PRIMARY KEY,
+    from_member_id VARCHAR(50) NOT NULL,
+    to_member_id VARCHAR(50) NOT NULL,
+    request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (from_member_id) REFERENCES member(member_id),
+    FOREIGN KEY (to_member_id) REFERENCES member(member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

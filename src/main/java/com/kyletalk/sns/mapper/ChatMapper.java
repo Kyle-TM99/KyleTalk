@@ -45,4 +45,8 @@ public interface ChatMapper {
     void deleteAllMessages(String roomId);
     // 채팅방의 모든 참여자 삭제
     void deleteAllParticipants(String roomId);
+    // 인기 채팅방 조회 메서드 추가
+    List<ChatRoom> getHotChatRooms(@Param("limit") int limit);
+    // 채팅방 메시지 조회
+    List<ChatMessage> getMessages(@Param("roomId") String roomId);
 } 

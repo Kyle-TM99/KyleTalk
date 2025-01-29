@@ -151,4 +151,35 @@
         DELETE FROM chat_room_participant WHERE room_id = #{roomId}
     </delete>
     
+    <!-- 인기 채팅방 조회 -->
+    <select id="getHotChatRooms" resultType="ChatRoom">
+        SELECT 
+            r.room_id as roomId,
+            r.room_name as roomName,
+            r.created_by as createdBy,
+            r.current_users as currentUsers,
+            r.created_at as createdAt,
+            r.room_admin as roomAdmin,
+            m1.nickname as creatorNickname,
+            m2.nickname as adminNickname
+        FROM chat_room r
+        JOIN member m1 ON r.created_by = m1.member_id
+        JOIN member m2 ON r.room_admin = m2.member_id
+        ORDER BY r.current_users DESC, r.created_at DESC
+        LIMIT #{limit}
+    </select>
+    <!-- 채팅방 메시지 조회 -->
+    <select id="getMessages" resultType="ChatMessage">
+        SELECT 
+            message_id as messageId,
+            room_id as roomId,
+            sender,
+            nickname,
+            message,
+            message_type as type,
+            sent_at as sentAt
+        FROM chat_message
+        WHERE room_id = #{roomId}
+        ORDER BY sent_at DESC
+    </select>
 </mapper> 
